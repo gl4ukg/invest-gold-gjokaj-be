@@ -3,11 +3,15 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './typeorm.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { ProductsModule } from './products/products.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Makes the ConfigModule available globally
+      isGlobal: true,
       envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync({
@@ -15,7 +19,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: typeOrmConfig,
       inject: [ConfigService],
     }),
-    // ... other modules
+    UserModule,
+    AuthModule,
+    ProductsModule,
+    CategoriesModule,
   ],
   controllers: [],
   providers: [],
