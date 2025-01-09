@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=nest_user
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=invest_gold_gjokaj
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+      
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: nest_user
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: invest_gold_gjokaj
+    ports:
+      - "5434:5432"
+
+
+volumes:
+  pgdata:
