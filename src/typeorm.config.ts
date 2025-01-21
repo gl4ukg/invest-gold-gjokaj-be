@@ -1,6 +1,10 @@
 // src/typeorm.config.ts
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { Products } from './products/products.entity';
+import { Categories } from './categories/categories.entity';
+import { Order } from './orders/order.entity';
+import { User } from './user/user.entity';
 
 export const typeOrmConfig = (
   configService: ConfigService,
@@ -11,6 +15,6 @@ export const typeOrmConfig = (
   username: configService.get<string>('POSTGRES_USER'),
   password: configService.get<string>('POSTGRES_PASSWORD'),
   database: configService.get<string>('POSTGRES_DB'),
-  entities: [__dirname + '/**/*.entity{.ts,.js}'],
+  entities: [Products, Categories, Order, User],
   synchronize: true, // Set to false in production
 });
