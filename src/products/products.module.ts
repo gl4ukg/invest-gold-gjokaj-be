@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProductsController } from './products.controller';
-import { ProductsService } from './products.service';
 import { Products } from './products.entity';
 import { Categories } from '../categories/categories.entity';
+import { ProductsController } from './products.controller';
+import { ProductsService } from './products.service';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
@@ -12,6 +12,7 @@ import { AuthModule } from '../auth/auth.module';
     AuthModule
   ],
   controllers: [ProductsController],
-  providers: [ProductsService]
+  providers: [ProductsService],
+  exports: [ProductsService],
 })
 export class ProductsModule {}

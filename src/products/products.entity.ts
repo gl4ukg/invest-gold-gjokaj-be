@@ -19,7 +19,7 @@ export class Products {
   @Column()
   stock: number;
 
-  @Column()
+  @Column('text')
   image: string;
 
   @ManyToOne(() => Categories, (category) => category.products)
