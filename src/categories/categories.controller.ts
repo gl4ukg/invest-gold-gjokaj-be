@@ -13,13 +13,11 @@ export class CategoriesController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async getCategories() {
     return this.categoriesService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   async getCategory(@Body() id: string) {
     return this.categoriesService.findOne(id);
   }

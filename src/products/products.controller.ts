@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Param, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { SearchProductsDto } from './dto/search-products.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -8,31 +9,46 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async createProduct(@Body() productData, categoryId: string) {
+  async createProduct(
+    @Body() productData: any,
+    @Body('categoryId') categoryId: string
+  ) {
     return this.productsService.create(productData, categoryId);
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async getProducts() {
     return this.productsService.findAll();
   }
 
+  @Get('search')
+  async searchProducts(@Query() searchDto: SearchProductsDto) {
+    // Convert string numbers to actual numbers
+    if (searchDto.minPrice) searchDto.minPrice = Number(searchDto.minPrice);
+    if (searchDto.maxPrice) searchDto.maxPrice = Number(searchDto.maxPrice);
+    if (searchDto.page) searchDto.page = Number(searchDto.page);
+    if (searchDto.limit) searchDto.limit = Number(searchDto.limit);
+
+    return this.productsService.search(searchDto);
+  }
+
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async getProduct(@Body() id: string) {
+  async getProduct(@Param('id') id: string) {
     return this.productsService.findOne(id);
   }
 
   @Post(':id')
   @UseGuards(JwtAuthGuard)
-  async updateProduct(@Body() id: string, @Body() productData) {
+  async updateProduct(
+    @Param('id') id: string,
+    @Body() productData: any
+  ) {
     return this.productsService.update(id, productData);
   }
 
   @Post(':id/delete')
   @UseGuards(JwtAuthGuard)
-  async deleteProduct(@Body() id: string) {
+  async deleteProduct(@Param('id') id: string) {
     return this.productsService.remove(id);
   }
 }

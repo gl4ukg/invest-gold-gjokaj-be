@@ -2,8 +2,9 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Products } from './products.entity';
 import { Categories } from '../categories/categories.entity';
-import { Repository } from 'typeorm';
+import { Repository, Like, Between, ILike } from 'typeorm';
 import { ImageUtils } from '../utils/image.utils';
+import { SearchProductsDto, SortOrder } from './dto/search-products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -42,11 +43,91 @@ export class ProductsService {
   }
 
   async findAll(): Promise<Products[]> {
-    return this.productsRepository.find();
+    return this.productsRepository.find({
+      relations: ['category']
+    });
+  }
+
+  async search(searchDto: SearchProductsDto) {
+    const { search, categoryId, minPrice, maxPrice, page = 1, limit = 10, sortBy } = searchDto;
+    
+    const query = this.productsRepository.createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category');
+
+    // Apply search filter
+    if (search) {
+      query.andWhere(
+        '(LOWER(product.name) LIKE LOWER(:search) OR LOWER(product.description) LIKE LOWER(:search))',
+        { search: `%${search}%` }
+      );
+    }
+
+    // Apply category filter
+    if (categoryId) {
+      query.andWhere('category.id = :categoryId', { categoryId });
+    }
+
+    // Apply price range filter
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      query.andWhere('product.price BETWEEN :minPrice AND :maxPrice', {
+        minPrice,
+        maxPrice,
+      });
+    } else if (minPrice !== undefined) {
+      query.andWhere('product.price >= :minPrice', { minPrice });
+    } else if (maxPrice !== undefined) {
+      query.andWhere('product.price <= :maxPrice', { maxPrice });
+    }
+
+    // Apply sorting
+    if (sortBy) {
+      switch (sortBy) {
+        case SortOrder.PRICE_ASC:
+          query.orderBy('product.price', 'ASC');
+          break;
+        case SortOrder.PRICE_DESC:
+          query.orderBy('product.price', 'DESC');
+          break;
+        case SortOrder.NEWEST:
+          query.orderBy('product.createdAt', 'DESC');
+          break;
+        default:
+          query.orderBy('product.createdAt', 'DESC'); // Default sorting
+      }
+    } else {
+      query.orderBy('product.createdAt', 'DESC'); // Default sorting
+    }
+
+    // Add pagination
+    const skip = (page - 1) * limit;
+    query.skip(skip).take(limit);
+
+    // Get total count for pagination
+    const [products, total] = await query.getManyAndCount();
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    return {
+      products,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage,
+        hasPreviousPage,
+      },
+    };
   }
 
   async findOne(id: string): Promise<Products> {
-    const product = await this.productsRepository.findOne({ where: { id } });
+    const product = await this.productsRepository.findOne({ 
+      where: { id },
+      relations: ['category']
+    });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
