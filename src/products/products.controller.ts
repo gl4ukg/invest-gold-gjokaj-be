@@ -2,6 +2,8 @@ import { Body, Controller, Get, Post, Query, Param, UseGuards } from '@nestjs/co
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { SearchProductsDto } from './dto/search-products.dto';
+import { Products } from './products.entity';
+import { CreateProductDto } from './dto/create-products.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -9,10 +11,18 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async createProduct(
-    @Body() productData: any,
-    @Body('categoryId') categoryId: string
-  ) {
+  async createProduct(@Body() createProductDto: CreateProductDto) {
+    const { product, categoryId } = createProductDto;
+    
+    // Extract only the needed fields from the product
+    const productData = {
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      image: product.image
+    };
+
     return this.productsService.create(productData, categoryId);
   }
 

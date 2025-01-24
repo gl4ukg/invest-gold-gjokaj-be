@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { Order } from './order.entity';
 
@@ -13,5 +13,15 @@ export class OrdersController {
     @Body('quantity') quantity: number,
   ): Promise<Order> {
     return this.orderService.createGuestOrder(guestEmail, productId, quantity);
+  }
+
+  @Get()
+  async findAll(): Promise<Order[]> {
+    return this.orderService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<Order> {
+    return this.orderService.findOne(id);
   }
 }

@@ -44,7 +44,10 @@ export class ProductsService {
 
   async findAll(): Promise<Products[]> {
     return this.productsRepository.find({
-      relations: ['category']
+      relations: ['category'],
+      order: {
+        createdAt: 'ASC',
+      },
     });
   }
 
@@ -57,7 +60,7 @@ export class ProductsService {
     // Apply search filter
     if (search) {
       query.andWhere(
-        '(LOWER(product.name) LIKE LOWER(:search) OR LOWER(product.description) LIKE LOWER(:search))',
+        '(LOWER(product.name) LIKE LOWER(:search))',
         { search: `%${search}%` }
       );
     }
