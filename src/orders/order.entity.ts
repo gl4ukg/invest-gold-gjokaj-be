@@ -1,5 +1,15 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { Products } from '../products/products.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn
+} from 'typeorm';
+import { OrderItem } from './order-item.entity';
+import { ShippingAddress } from './shipping-address.entity';
 
 @Entity('orders')
 export class Order {
@@ -7,30 +17,36 @@ export class Order {
   id: string;
 
   @Column()
-  guestEmail: string;
+  email: string;
 
-  @ManyToOne(() => Products, (product) => product.orders)
-  @JoinColumn({ name: 'product_id' })
-  product: Products;
+  @OneToMany(() => OrderItem, item => item.order, { cascade: true })
+  items: OrderItem[];
 
-  @Column()
-  quantity: number;
+  @Column('decimal', { precision: 10, scale: 2 })
+  subtotal: number;
 
-  @Column()
-  totalPrice: number;
+  @Column('decimal', { precision: 10, scale: 2 })
+  shippingCost: number;
 
-  @Column()
-  shippingAddress: string;
-
-  @Column()
-  city: string;
+  @Column('decimal', { precision: 10, scale: 2 })
+  total: number;
 
   @Column()
-  state: string;
+  paymentMethod: string;
 
   @Column()
-  postalCode: string;
+  shippingMethod: string;
 
-  @Column()
-  country: string;
+  @OneToOne(() => ShippingAddress, address => address.order, { cascade: true })
+  @JoinColumn()
+  shippingAddress: ShippingAddress;
+
+  @Column({ default: 'pending' })
+  status: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

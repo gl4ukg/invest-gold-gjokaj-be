@@ -105,6 +105,8 @@ export class ProductsService {
     const skip = (page - 1) * limit;
     query.skip(skip).take(limit);
 
+    query.orderBy('product.createdAt', 'ASC');
+
     // Get total count for pagination
     const [products, total] = await query.getManyAndCount();
 

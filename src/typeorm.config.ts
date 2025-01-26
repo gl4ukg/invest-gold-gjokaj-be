@@ -5,16 +5,18 @@ import { Products } from './products/products.entity';
 import { Categories } from './categories/categories.entity';
 import { Order } from './orders/order.entity';
 import { User } from './user/user.entity';
+import { OrderItem } from './orders/order-item.entity';
+import { ShippingAddress } from './orders/shipping-address.entity';
 
 export const typeOrmConfig = (
   configService: ConfigService,
 ): TypeOrmModuleOptions => ({
   type: 'postgres',
   host: configService.get<string>('POSTGRES_HOST'),
-  port: parseInt(configService.get<string>('POSTGRES_PORT'), 10) || 5432,
+  port: configService.get<number>('POSTGRES_PORT'),
   username: configService.get<string>('POSTGRES_USER'),
   password: configService.get<string>('POSTGRES_PASSWORD'),
   database: configService.get<string>('POSTGRES_DB'),
-  entities: [Products, Categories, Order, User],
+  entities: [Products, Categories, Order, OrderItem, ShippingAddress, User],
   synchronize: true, // Set to false in production
 });

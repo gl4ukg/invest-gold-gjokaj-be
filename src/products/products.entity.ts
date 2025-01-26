@@ -1,5 +1,5 @@
 import { Categories } from 'src/categories/categories.entity';
-import { Order } from 'src/orders/order.entity';
+import { OrderItem } from 'src/orders/order-item.entity';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('products')
@@ -13,21 +13,21 @@ export class Products {
   @Column()
   description: string;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true, default: 0 })
+  @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
   @Column()
   stock: number;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ nullable: true })
   image: string;
 
   @ManyToOne(() => Categories, (category) => category.products)
   @JoinColumn({ name: 'category_id' })
   category: Categories;
 
-  @OneToMany(() => Order, (order) => order.product)
-  orders: Order[];
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.product)
+  orderItems: OrderItem[];
 
   @CreateDateColumn()
   createdAt: Date;

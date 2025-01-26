@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { Order } from './order.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -8,11 +9,9 @@ export class OrdersController {
 
   @Post('guest')
   async createGuestOrder(
-    @Body('guestEmail') guestEmail: string,
-    @Body('productId') productId: string,
-    @Body('quantity') quantity: number,
+    @Body() orderData: CreateOrderDto
   ): Promise<Order> {
-    return this.orderService.createGuestOrder(guestEmail, productId, quantity);
+    return this.orderService.createGuestOrder(orderData);
   }
 
   @Get()
