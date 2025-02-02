@@ -12,6 +12,9 @@ export class Categories {
   @Column()
   description: string;
 
+  @Column({ nullable: true })
+  image: string;
+
   @OneToMany(() => Products, (product) => product.category)
   products: Products[];
 

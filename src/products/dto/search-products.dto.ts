@@ -3,7 +3,8 @@ import { IsOptional, IsString, IsNumber, Min, IsEnum } from 'class-validator';
 export enum SortOrder {
   PRICE_ASC = 'price_asc',
   PRICE_DESC = 'price_desc',
-  NEWEST = 'newest'
+  NEWEST = 'newest',
+  OLDEST = 'oldest'
 }
 
 export class SearchProductsDto {

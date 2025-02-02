@@ -18,7 +18,7 @@ export class ProductsController {
     const productData = {
       name: product.name,
       description: product.description,
-      price: product.price,
+      weight: product.weight,
       stock: product.stock,
       image: product.image
     };
@@ -34,8 +34,8 @@ export class ProductsController {
   @Get('search')
   async searchProducts(@Query() searchDto: SearchProductsDto) {
     // Convert string numbers to actual numbers
-    if (searchDto.minPrice) searchDto.minPrice = Number(searchDto.minPrice);
-    if (searchDto.maxPrice) searchDto.maxPrice = Number(searchDto.maxPrice);
+    // if (searchDto.minPrice) searchDto.minPrice = Number(searchDto.minPrice);
+    // if (searchDto.maxPrice) searchDto.maxPrice = Number(searchDto.maxPrice);
     if (searchDto.page) searchDto.page = Number(searchDto.page);
     if (searchDto.limit) searchDto.limit = Number(searchDto.limit);
 

@@ -13,8 +13,11 @@ export class Products {
   @Column()
   description: string;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
   price: number;
+
+  @Column()
+  weight: string;
 
   @Column()
   stock: number;

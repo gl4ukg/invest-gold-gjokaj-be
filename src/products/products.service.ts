@@ -71,16 +71,16 @@ export class ProductsService {
     }
 
     // Apply price range filter
-    if (minPrice !== undefined && maxPrice !== undefined) {
-      query.andWhere('product.price BETWEEN :minPrice AND :maxPrice', {
-        minPrice,
-        maxPrice,
-      });
-    } else if (minPrice !== undefined) {
-      query.andWhere('product.price >= :minPrice', { minPrice });
-    } else if (maxPrice !== undefined) {
-      query.andWhere('product.price <= :maxPrice', { maxPrice });
-    }
+    // if (minPrice !== undefined && maxPrice !== undefined) {
+    //   query.andWhere('product.price BETWEEN :minPrice AND :maxPrice', {
+    //     minPrice,
+    //     maxPrice,
+    //   });
+    // } else if (minPrice !== undefined) {
+    //   query.andWhere('product.price >= :minPrice', { minPrice });
+    // } else if (maxPrice !== undefined) {
+    //   query.andWhere('product.price <= :maxPrice', { maxPrice });
+    // }
 
     // Apply sorting
     if (sortBy) {
@@ -94,6 +94,9 @@ export class ProductsService {
         case SortOrder.NEWEST:
           query.orderBy('product.createdAt', 'DESC');
           break;
+        case SortOrder.OLDEST:
+          query.orderBy('product.createdAt', 'ASC');
+          break;
         default:
           query.orderBy('product.createdAt', 'DESC'); // Default sorting
       }
@@ -105,7 +108,6 @@ export class ProductsService {
     const skip = (page - 1) * limit;
     query.skip(skip).take(limit);
 
-    query.orderBy('product.createdAt', 'ASC');
 
     // Get total count for pagination
     const [products, total] = await query.getManyAndCount();

@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Categories } from './categories.entity';
 import { Repository } from 'typeorm';
+import { ImageUtils } from '../utils/image.utils';
 
 @Injectable()
 export class CategoriesService {
@@ -11,6 +12,15 @@ export class CategoriesService {
   ) {}
 
   async create(categoryData: Partial<Categories>): Promise<Categories> {
+    // Process image if present
+    if (categoryData.image) {
+      try {
+        categoryData.image = await ImageUtils.validateAndOptimizeImage(categoryData.image);
+      } catch (error) {
+        throw new BadRequestException(error.message);
+      }
+    }
+
     const category = this.categoriesRepository.create(categoryData);
     return this.categoriesRepository.save(category);
   }
@@ -36,6 +46,16 @@ export class CategoriesService {
         'Category ID is required for updating the category',
       );
     }
+
+    // Process image if present
+    if (categoryData.image) {
+      try {
+        categoryData.image = await ImageUtils.validateAndOptimizeImage(categoryData.image);
+      } catch (error) {
+        throw new BadRequestException(error.message);
+      }
+    }
+
     const updateResult = await this.categoriesRepository.update(
       id,
       categoryData,

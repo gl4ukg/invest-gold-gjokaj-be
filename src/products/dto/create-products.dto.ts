@@ -1,5 +1,5 @@
 import { Products } from "../products.entity";
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
 
 export class ProductData {
   @IsNotEmpty()
@@ -10,9 +10,14 @@ export class ProductData {
   @IsString()
   description: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  price: number;
+  price?: number;
+
+  @IsNotEmpty()
+  @IsString() 
+  @Matches(/^\d+(-\d+)?$/, { message: 'Pesha duhet të jetë ose një numër i vetëm (p.sh., "2") ose një varge (p.sh., "2-3")' })
+  weight: string;
 
   @IsNotEmpty()
   @IsNumber()
