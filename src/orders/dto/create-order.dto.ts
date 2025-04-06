@@ -1,5 +1,6 @@
-import { IsString, IsNumber, IsEmail, IsArray, ValidateNested, IsEnum } from 'class-validator';
+import { IsString, IsNumber, IsEmail, IsArray, ValidateNested, IsEnum, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ConfiguratorState } from './configurator';
 
 export class OrderItemDto {
   @IsString()
@@ -7,6 +8,10 @@ export class OrderItemDto {
 
   @IsNumber()
   quantity: number;
+
+  @ValidateNested()
+  @Type(() => ConfiguratorState)
+  configuration: ConfiguratorState;
 
   @IsString()
   price: string;

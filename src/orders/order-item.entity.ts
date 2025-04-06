@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Order } from './order.entity';
 import { Products } from '../products/products.entity';
+import { ConfiguratorState } from './dto/configurator';
 
 @Entity('order_items')
 export class OrderItem {
@@ -20,8 +21,8 @@ export class OrderItem {
   @ManyToOne(() => Products)
   product: Products;
 
-  @Column('int')
-  quantity: number;
+  @Column('jsonb', { nullable: true })
+  configuration: ConfiguratorState;
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
