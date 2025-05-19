@@ -5,6 +5,7 @@ import { Categories } from '../categories/categories.entity';
 import { Repository, Like, Between, ILike } from 'typeorm';
 import { ImageUtils } from '../utils/image.utils';
 import { SearchProductsDto, SortOrder } from './dto/search-products.dto';
+import { FilterProductsDto, SortBy } from './dto/filter-products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -26,13 +27,19 @@ export class ProductsService {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
 
-    // Process image if present
-    if (productData.image) {
+    // Process images if present
+    if (productData.images && Array.isArray(productData.images)) {
       try {
-        productData.image = await ImageUtils.validateAndOptimizeImage(productData.image);
+        // Process each image in parallel
+        const optimizedImages = await Promise.all(
+          productData.images.map(image => ImageUtils.validateAndOptimizeImage(image))
+        );
+        productData.images = optimizedImages;
       } catch (error) {
         throw new BadRequestException(error.message);
       }
+    } else if (productData.images) {
+      throw new BadRequestException('Images must be provided as an array');
     }
 
     const product = this.productsRepository.create({
@@ -52,85 +59,101 @@ export class ProductsService {
   }
 
   async search(searchDto: SearchProductsDto) {
-    const { search, categoryId, minPrice, maxPrice, page = 1, limit = 10, sortBy } = searchDto;
-    
-    const query = this.productsRepository.createQueryBuilder('product')
+    const {
+      query,
+      categoryIds,
+      sortBy,
+      sortOrder,
+      page = 1,
+      limit = 10
+    } = searchDto;
+
+    const queryBuilder = this.productsRepository
+      .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category');
 
-    // Apply search filter
-    if (search) {
-      query.andWhere(
+    // Apply search query if provided
+    if (query) {
+      queryBuilder.andWhere(
         '(LOWER(product.name) LIKE LOWER(:search))',
-        { search: `%${search}%` }
+        { search: `%${query}%` }
       );
     }
 
-    // Apply category filter
-    if (categoryId) {
-      query.andWhere('category.id = :categoryId', { categoryId });
+    // Filter by categories if provided
+    if (categoryIds && categoryIds.length > 0) {
+      queryBuilder.andWhere('category.id IN (:...categoryIds)', { categoryIds });
     }
 
-    // Apply price range filter
-    // if (minPrice !== undefined && maxPrice !== undefined) {
-    //   query.andWhere('product.price BETWEEN :minPrice AND :maxPrice', {
-    //     minPrice,
-    //     maxPrice,
-    //   });
-    // } else if (minPrice !== undefined) {
-    //   query.andWhere('product.price >= :minPrice', { minPrice });
-    // } else if (maxPrice !== undefined) {
-    //   query.andWhere('product.price <= :maxPrice', { maxPrice });
-    // }
-
     // Apply sorting
-    if (sortBy) {
-      switch (sortBy) {
-        case SortOrder.PRICE_ASC:
-          query.orderBy('product.price', 'ASC');
-          break;
-        case SortOrder.PRICE_DESC:
-          query.orderBy('product.price', 'DESC');
-          break;
-        case SortOrder.NEWEST:
-          query.orderBy('product.createdAt', 'DESC');
-          break;
-        case SortOrder.OLDEST:
-          query.orderBy('product.createdAt', 'ASC');
-          break;
-        default:
-          query.orderBy('product.createdAt', 'DESC'); // Default sorting
-      }
-    } else {
-      query.orderBy('product.createdAt', 'DESC'); // Default sorting
+    switch (sortBy) {
+      case SortBy.NAME:
+        queryBuilder.orderBy('product.name', sortOrder);
+        break;
+      case SortBy.STOCK:
+        queryBuilder.orderBy('product.stock', sortOrder);
+        break;
+      case SortBy.CREATED_AT:
+      default:
+        queryBuilder.orderBy('product.createdAt', sortOrder);
     }
 
     // Add pagination
     const skip = (page - 1) * limit;
-    query.skip(skip).take(limit);
+    queryBuilder.skip(skip).take(limit);
 
-
-    // Get total count for pagination
-    const [products, total] = await query.getManyAndCount();
-
-    // Calculate pagination metadata
-    const totalPages = Math.ceil(total / limit);
-    const hasNextPage = page < totalPages;
-    const hasPreviousPage = page > 1;
+    const [items, total] = await queryBuilder.getManyAndCount();
 
     return {
-      products,
-      pagination: {
-        total,
+      items,
+      meta: {
         page,
         limit,
-        totalPages,
-        hasNextPage,
-        hasPreviousPage,
-      },
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  }
+
+  async filterProducts(filterDto: FilterProductsDto) {
+    const { categoryIds, sortBy, sortOrder, page = 1, limit = 10 } = filterDto;
+    
+    const queryBuilder = this.productsRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category');
+
+    if (categoryIds && categoryIds.length > 0) {
+      queryBuilder.where('category.id IN (:...categoryIds)', { categoryIds });
+    }
+
+    if (sortBy === SortBy.NAME) {
+      queryBuilder.orderBy('product.name', sortOrder);
+    } else if (sortBy === SortBy.CREATED_AT) {
+      queryBuilder.orderBy('product.createdAt', sortOrder);
+    }
+
+    // Add pagination
+    const skip = (page - 1) * limit;
+    queryBuilder.skip(skip).take(limit);
+
+    const [products, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      items: products,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
     };
   }
 
   async findOne(id: string): Promise<Products> {
+    if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      throw new BadRequestException('Invalid product ID format');
+    }
+
     const product = await this.productsRepository.findOne({ 
       where: { id },
       relations: ['category']
@@ -142,13 +165,19 @@ export class ProductsService {
   }
 
   async update(id: string, productData: Partial<Products>): Promise<Products> {
-    // Process image if present
-    if (productData.image) {
+    // Process images if present
+    if (productData.images && Array.isArray(productData.images)) {
       try {
-        productData.image = await ImageUtils.validateAndOptimizeImage(productData.image);
+        // Process each image in parallel
+        const optimizedImages = await Promise.all(
+          productData.images.map(image => ImageUtils.validateAndOptimizeImage(image))
+        );
+        productData.images = optimizedImages;
       } catch (error) {
         throw new BadRequestException(error.message);
       }
+    } else if (productData.images) {
+      throw new BadRequestException('Images must be provided as an array');
     }
 
     const updateResult = await this.productsRepository.update(id, productData);
@@ -160,9 +189,12 @@ export class ProductsService {
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.productsRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+    if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      throw new BadRequestException('Invalid product ID format');
     }
+
+    const product = await this.findOne(id);
+  
+    await this.productsRepository.remove(product);
   }
 }

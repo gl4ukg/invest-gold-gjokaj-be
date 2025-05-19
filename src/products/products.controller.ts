@@ -20,7 +20,7 @@ export class ProductsController {
       description: product.description,
       weight: product.weight,
       stock: product.stock,
-      image: product.image
+      images: product.images
     };
 
     return this.productsService.create(productData, categoryId);
@@ -31,14 +31,8 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
-  @Get('search')
-  async searchProducts(@Query() searchDto: SearchProductsDto) {
-    // Convert string numbers to actual numbers
-    // if (searchDto.minPrice) searchDto.minPrice = Number(searchDto.minPrice);
-    // if (searchDto.maxPrice) searchDto.maxPrice = Number(searchDto.maxPrice);
-    if (searchDto.page) searchDto.page = Number(searchDto.page);
-    if (searchDto.limit) searchDto.limit = Number(searchDto.limit);
-
+  @Post('search')
+  async search(@Body() searchDto: SearchProductsDto) {
     return this.productsService.search(searchDto);
   }
 

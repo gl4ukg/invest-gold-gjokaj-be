@@ -1,5 +1,4 @@
-import { IsEnum, IsOptional, IsString, IsArray, IsNumber, Min, Max } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsEnum, IsOptional, IsString, IsArray } from 'class-validator';
 
 export enum SortOrder {
   ASC = 'ASC',
@@ -9,14 +8,10 @@ export enum SortOrder {
 export enum SortBy {
   NAME = 'name',
   CREATED_AT = 'createdAt',
-  STOCK = 'stock'  // Sort by product availability
+  STOCK = 'stock'
 }
 
-export class SearchProductsDto {
-  @IsString()
-  @IsOptional()
-  query?: string;
-
+export class FilterProductsDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -30,16 +25,9 @@ export class SearchProductsDto {
   @IsOptional()
   sortOrder?: SortOrder = SortOrder.DESC;
 
-  @IsNumber()
   @IsOptional()
-  @Type(() => Number)
-  @Min(1)
   page?: number = 1;
 
-  @IsNumber()
   @IsOptional()
-  @Type(() => Number)
-  @Min(1)
-  @Max(100)
   limit?: number = 10;
 }

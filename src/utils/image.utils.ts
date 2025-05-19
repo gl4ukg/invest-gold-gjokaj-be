@@ -42,16 +42,51 @@ export class ImageUtils {
         });
       }
 
-      // Convert to JPEG and compress
-      const optimizedBuffer = await image
-        .jpeg({
-          quality: this.COMPRESSION_QUALITY,
-          mozjpeg: true, // Use mozjpeg for better compression
-        })
-        .toBuffer();
+      // Process image based on original format
+      let optimizedBuffer;
+      let outputFormat = imageFormat;
+      
+      // Preserve format for images that support transparency
+      if (['png', 'webp', 'avif'].includes(imageFormat)) {
+        switch (imageFormat) {
+          case 'png':
+            optimizedBuffer = await image
+              .png({
+                compressionLevel: 9,
+                palette: true
+              })
+              .toBuffer();
+            break;
+          case 'webp':
+            optimizedBuffer = await image
+              .webp({
+                quality: this.COMPRESSION_QUALITY,
+                lossless: true // Preserve transparency
+              })
+              .toBuffer();
+            break;
+          case 'avif':
+            optimizedBuffer = await image
+              .avif({
+                quality: this.COMPRESSION_QUALITY,
+                lossless: true // Preserve transparency
+              })
+              .toBuffer();
+            break;
+        }
+      } else {
+        // For formats without transparency, convert to WebP with lossy compression
+        optimizedBuffer = await image
+          .webp({
+            quality: this.COMPRESSION_QUALITY,
+            lossless: false
+          })
+          .toBuffer();
+        outputFormat = 'webp';
+      }
 
       // Convert back to base64
-      const optimizedBase64 = `data:image/jpeg;base64,${optimizedBuffer.toString('base64')}`;
+      const optimizedBase64 = `data:image/${outputFormat};base64,${optimizedBuffer.toString('base64')}`;
 
       // Validate final size
       const finalSizeMB = optimizedBuffer.length / (1024 * 1024);

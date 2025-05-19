@@ -68,16 +68,23 @@ export class CategoriesService {
   }
 
   async remove(id: string): Promise<Categories> {
-    if (!id) {
-      throw new NotFoundException(
-        'Category ID is required for deleting the category',
-      );
+    try {
+      if (!id) {
+        throw new NotFoundException(
+          'Category ID is required for deleting the category',
+        );
+      }
+      const category = await this.categoriesRepository.findOne({ where: { id } });
+      if (!category) {
+        throw new NotFoundException(`Category with ID ${id} not found`);
+      }
+      await this.categoriesRepository.remove(category);
+      return category;
+    } catch (error) {
+      if (error.code === '23503') { // Foreign key violation
+        throw new BadRequestException('Cannot delete category because it has associated products');
+      }   
+      throw error;
     }
-    const category = await this.categoriesRepository.findOne({ where: { id } });
-    if (!category) {
-      throw new NotFoundException(`Category with ID ${id} not found`);
-    }
-    await this.categoriesRepository.remove(category);
-    return category;
   }
 }

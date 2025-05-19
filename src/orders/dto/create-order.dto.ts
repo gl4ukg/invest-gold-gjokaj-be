@@ -1,10 +1,12 @@
-import { IsString, IsNumber, IsEmail, IsArray, ValidateNested, IsEnum, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsEmail, IsArray, ValidateNested, IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ConfiguratorState } from './configurator';
+import { Products } from 'src/products/products.entity';
 
 export class OrderItemDto {
-  @IsString()
-  productId: string;
+  @ValidateNested()
+  @Type(() => Products)
+  product: Products;
 
   @IsNumber()
   quantity: number;

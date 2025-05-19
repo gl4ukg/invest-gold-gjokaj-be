@@ -96,15 +96,24 @@ export type StoneQuality = '' | 'G-H/VS-SI' | 'F-G/VVS' | 'D-E/IF-VVS1';
 export type StoneSpacing = '' | 'Together' | 'Small Gap' | 'Medium Gap' | 'Large Gap';
 export type StonePosition = '' | 'Left' | 'Center' | 'Right' | 'Free';
 
+export interface Stone {
+    id: number;
+    size: string;
+    quality: string;
+    x: number;
+    y: number;
+}
+
 export interface StoneSettings {
     settingType: StoneSettingType;
-    stoneType: StoneType;
-    stoneSize: StoneSize;
-    stoneQuality: StoneQuality;
-    numberOfStones: number;
-    spacing: StoneSpacing;
-    position: StonePosition;
-    offset?: number; // Percentage offset from center (-50 to 50) when position is 'Free'
+    stoneType?: StoneType;
+    stoneSize?: StoneSize;
+    stoneQuality?: StoneQuality;
+    numberOfStones?: number;
+    spacing?: StoneSpacing;
+    position?: StonePosition;
+    offset?: number;
+    stones?: Stone[]; // Percentage offset from center (-50 to 50) when position is 'Free'
 }
 
 export type GrooveType = 
@@ -120,12 +129,18 @@ export type EdgeType = '' | 'none' | 'step' | 'carbon' | 'milgrain';
 export type GrooveAlignment = '' | 'left' | 'center' | 'right';
 export type SurfaceType = '' | 'Polished' | 'Sandblasted';
 
+export type Direction = 'vertical' | 'wave';
+
 export interface GrooveSettings {
+    id: number;
     grooveType: GrooveType;
-    width: number; // in mm
-    depth: number; // in mm
+    width: number;
+    depth: number;
     surface: SurfaceType;
-    alignment: GrooveAlignment;
+    direction: Direction;
+    position: number;
+    numberOfWaves?: 1 | 2 | 3;
+    waveHeight?: number; // 5-95
 }
 
 export interface EdgeSettings {
@@ -136,7 +151,7 @@ export interface EdgeSettings {
 }
 
 export interface GroovesAndEdges {
-    groove: GrooveSettings;
+    groove: GrooveSettings[];
     leftEdge: EdgeSettings;
     rightEdge: EdgeSettings;
 }

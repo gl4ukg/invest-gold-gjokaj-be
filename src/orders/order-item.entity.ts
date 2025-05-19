@@ -18,7 +18,7 @@ export class OrderItem {
   @ManyToOne(() => Order, order => order.items)
   order: Order;
 
-  @ManyToOne(() => Products)
+  @ManyToOne(() => Products, { onDelete: 'CASCADE' })
   product: Products;
 
   @Column('jsonb', { nullable: true })

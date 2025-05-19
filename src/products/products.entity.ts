@@ -22,10 +22,10 @@ export class Products {
   @Column()
   stock: number;
 
-  @Column({ nullable: true })
-  image: string;
+  @Column('text', { array: true, nullable: true })
+  images: string[];
 
-  @ManyToOne(() => Categories, (category) => category.products)
+  @ManyToOne(() => Categories, (category) => category.products, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'category_id' })
   category: Categories;
 

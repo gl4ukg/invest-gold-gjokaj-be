@@ -24,8 +24,8 @@ export class ProductData {
   stock: number;
 
   @IsOptional()
-  @IsString()
-  image?: string;
+  @IsString({ each: true })
+  images?: string[];
 
   @IsOptional()
   category?: any;
