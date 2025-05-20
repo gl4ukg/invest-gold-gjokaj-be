@@ -10,11 +10,17 @@ export class EmailService implements OnModuleInit {
 
   async onModuleInit() {
     console.log('Initializing EmailService...', {
-      // envFile: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local',
       hasEmailUser: !!this.configService.get('EMAIL_USER'),
       hasEmailPassword: !!this.configService.get('EMAIL_APP_PASSWORD')
     });
-    await this.initializeTransporter();
+    try {
+      await this.initializeTransporter();
+    } catch (error) {
+      console.error('Failed to initialize email service, but continuing app startup:', {
+        error: error.message
+      });
+      // Don't throw the error, let the app continue
+    }
   }
 
   private async initializeTransporter() {
@@ -43,16 +49,22 @@ export class EmailService implements OnModuleInit {
         },
       });
 
-      // Verify connection
-      await this.transporter.verify();
+      // Verify connection with a timeout
+      await Promise.race([
+        this.transporter.verify(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('SMTP connection timeout')), 5000)
+        )
+      ]);
       console.log('Email transporter initialized and verified successfully');
     } catch (error) {
       console.error('Error initializing email transporter:', {
         name: error.name,
         message: error.message,
-        stack: error.stack,
         code: error.code
       });
+      // Set transporter to null so we can retry later
+      this.transporter = null;
       throw error;
     }
   }

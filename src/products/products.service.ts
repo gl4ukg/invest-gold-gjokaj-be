@@ -82,7 +82,31 @@ export class ProductsService {
 
     // Filter by categories if provided
     if (categoryIds && categoryIds.length > 0) {
-      queryBuilder.andWhere('category.id IN (:...categoryIds)', { categoryIds });
+      // Filter out invalid UUIDs
+      const validCategoryIds = categoryIds.filter(id => {
+        try {
+          // Remove any extra characters and validate format
+          const cleanId = id.trim();
+          return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanId);
+        } catch {
+          return false;
+        }
+      });
+      
+      // If categoryIds were provided but none are valid, return empty result
+      if (validCategoryIds.length === 0) {
+        return {
+          items: [],
+          meta: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 0
+          }
+        };
+      }
+
+      queryBuilder.andWhere('category.id IN (:...categoryIds)', { categoryIds: validCategoryIds });
     }
 
     // Apply sorting
