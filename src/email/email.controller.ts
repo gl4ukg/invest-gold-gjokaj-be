@@ -17,23 +17,12 @@ export class EmailController {
   @Post('contact')
   async sendContactForm(@Body() emailDto: SendEmailDto) {
     try {
-      console.log('Received contact form submission:', {
-        to: emailDto.to,
-        subject: emailDto.subject,
-        hasHtml: !!emailDto.html
-      });
-
       const result = await this.emailService.sendEmail(
         emailDto.to,
         emailDto.subject,
         emailDto.text,
         emailDto.html
       );
-
-      console.log('Contact form email sent successfully:', {
-        messageId: result.messageId,
-        response: result.response
-      });
 
       return { success: true, messageId: result.messageId };
     } catch (error) {

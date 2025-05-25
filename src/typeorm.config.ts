@@ -8,6 +8,7 @@ import { User } from './user/user.entity';
 import { OrderItem } from './orders/order-item.entity';
 import { ShippingAddress } from './orders/shipping-address.entity';
 import { PriceOfGram } from './price-of-gram/entities/price-of-gram.entity';
+import { PaymentTransaction } from './payment/entities/payment-transaction.entity';
 
 export const typeOrmConfig = (
   configService: ConfigService,
@@ -18,6 +19,6 @@ export const typeOrmConfig = (
   username: configService.get<string>('POSTGRES_USER'),
   password: configService.get<string>('POSTGRES_PASSWORD'),
   database: configService.get<string>('POSTGRES_DB'),
-  entities: [Products, Categories, Order, OrderItem, ShippingAddress, User, PriceOfGram],
+  entities: [Products, Categories, Order, OrderItem, ShippingAddress, User, PriceOfGram, PaymentTransaction],
   synchronize: true, // Set to false in production
 });

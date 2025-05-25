@@ -9,10 +9,9 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Order } from '../orders/order.entity';
 
 interface BankartTransactionResponse {
-  data: {
-    id: string;
-    redirectUrl: string;
-  };
+  transactionId: string;
+  redirectUrl: string;
+  status: string;
 }
 
 @Injectable()
@@ -41,6 +40,14 @@ export class PaymentService {
     return this.configService.get<string>('BANKART_SHARED_SECRET');
   }
 
+  private get apiUsername() {
+    return this.configService.get<string>('BANKART_API_USERNAME');
+  }
+
+  private get apiPassword() {
+    return this.configService.get<string>('BANKART_API_PASSWORD');
+  }
+
   private generateSignature(data: Record<string, any>): string {
     const sortedData = Object.keys(data)
       .sort()
@@ -61,7 +68,8 @@ export class PaymentService {
 
   async createPayment(createPaymentDto: CreatePaymentDto) {
     const order = await this.orderRepository.findOne({ 
-      where: { id: createPaymentDto.orderId }
+      where: { id: createPaymentDto.orderId },
+      relations: ['shippingAddress']
     });
 
     if (!order) {
@@ -72,51 +80,73 @@ export class PaymentService {
       throw new BadRequestException('Order is not in pending state');
     }
 
+    if (!order.shippingAddress) {
+      throw new BadRequestException('Shipping address is required');
+    }
+
+    // Split fullName into firstName and lastName
+    const [firstName, ...lastNameParts] = order.shippingAddress.fullName.split(' ');
+    const lastName = lastNameParts.join(' ');
+
     const paymentData = {
-      merchantId: this.merchantId,
-      amount: Math.round(createPaymentDto.amount * 100), // Convert to cents
-      currency: createPaymentDto.currency,
       merchantTransactionId: order.id,
-      customerId: order.email,
-      customerEmail: order.email,
+      amount: Number(createPaymentDto.amount).toFixed(2),
+      currency: createPaymentDto.currency,
       successUrl: `${createPaymentDto.returnUrl}/success`,
       cancelUrl: `${createPaymentDto.returnUrl}/cancel`,
       errorUrl: `${createPaymentDto.returnUrl}/error`,
-      timestamp: Math.floor(Date.now() / 1000),
+      callbackUrl: `${createPaymentDto.returnUrl}/callback`,
+      description: `Order ${order.id}`,
+      customer: {
+        email: order.email,
+        firstName: firstName || 'N/A',
+        lastName: lastName || 'N/A',
+        billingAddress1: order.shippingAddress.address,
+        billingCity: order.shippingAddress.city,
+        billingCountry: order.shippingAddress.country,
+        billingPostcode: order.shippingAddress.postalCode,
+        billingPhone: order.shippingAddress.phone
+      },
+      language: 'en'
     };
 
-    const signature = this.generateSignature(paymentData);
+    const auth = Buffer.from(`${this.apiUsername}:${this.apiPassword}`).toString('base64');
 
+
+    console.log('Bankart auth config:', this.apiKey, this.sharedSecret, this.apiUrl); // remove in production
+    console.log('Bankart auth:', auth); // remove in production
+    console.log('url;', `${this.apiUrl}/transaction/${this.apiKey}/debit`);
     try {
-      const response = await axios.post<BankartTransactionResponse>(`${this.apiUrl}/v3/transaction`, {
-        ...paymentData,
-        signature,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-      });
-
-      if (!response.data?.data) {
-        throw new BadRequestException('Invalid response from payment provider');
-      }
+      const response = await axios.post<BankartTransactionResponse>(
+        `${this.apiUrl}/transaction/${this.apiKey}/debit`,
+        paymentData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${auth}`,
+            'Date': new Date().toUTCString()
+          },
+        }
+      );
+      console.log(response,"responseee")
 
       const transaction = this.paymentTransactionRepository.create({
-        bankartTransactionId: response.data.data.id,
+        bankartTransactionId: response.data.transactionId,
         amount: createPaymentDto.amount,
         currency: createPaymentDto.currency,
-        status: 'pending',
+        status: response.data.status || 'pending',
         order,
       });
 
       await this.paymentTransactionRepository.save(transaction);
       
       return {
-        redirectUrl: response.data.data.redirectUrl,
+        redirectUrl: response.data.redirectUrl,
         transactionId: transaction.id,
       };
     } catch (error) {
+      console.error('Bankart error:', error.response?.data || error.message || error);
+
       throw new BadRequestException(
         error.response?.data?.message || 'Failed to create payment'
       );

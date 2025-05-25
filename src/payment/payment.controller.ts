@@ -8,13 +8,11 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   async createPayment(@Body() createPaymentDto: CreatePaymentDto) {
     return this.paymentService.createPayment(createPaymentDto);
   }
 
   @Post('refund/:transactionId')
-  @UseGuards(JwtAuthGuard)
   async refundPayment(@Param('transactionId') transactionId: string) {
     return this.paymentService.refundPayment(transactionId);
   }

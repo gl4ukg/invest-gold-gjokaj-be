@@ -22,7 +22,6 @@ export class PriceOfGramService {
 
   async updatePrice(createPriceOfGramDto: CreatePriceOfGramDto): Promise<PriceOfGram> {
     const currentPrice = await this.getCurrentPrice();
-    console.log(createPriceOfGramDto,"createPriceOfGramDto")
     
     if (currentPrice) {
       await this.priceOfGramRepository.update(currentPrice.id, { price: createPriceOfGramDto.price });

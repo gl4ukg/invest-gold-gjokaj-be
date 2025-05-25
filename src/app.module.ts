@@ -11,7 +11,6 @@ import { OrdersModule } from './orders/orders.module';
 import { EmailModule } from './email/email.module';
 import { PriceOfGramModule } from './price-of-gram/price-of-gram.module';
 import { PaymentModule } from './payment/payment.module';
-console.log(typeOrmConfig,"typeOrmConfig")
 @Module({
   imports: [
     ConfigModule.forRoot({
