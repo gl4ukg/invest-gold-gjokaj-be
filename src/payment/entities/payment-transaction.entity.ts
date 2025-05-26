@@ -8,7 +8,13 @@ export class PaymentTransaction {
   id: string;
 
   @Column()
-  bankartTransactionId: string;
+  bankartTransactionId: string; // = purchaseId returned from Bankart
+
+  @Column()
+  merchantTransactionId: string;  // = your order ID
+
+  @Column({ nullable: true })
+  uuid: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
@@ -18,6 +24,9 @@ export class PaymentTransaction {
 
   @Column()
   status: string; // 'pending' | 'completed' | 'failed' | 'refunded'
+
+  @Column({ nullable: true })
+  redirectUrl?: string; 
 
   @Column({ nullable: true })
   errorMessage?: string;

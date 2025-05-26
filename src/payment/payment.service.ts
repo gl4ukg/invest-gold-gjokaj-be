@@ -9,9 +9,10 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Order } from '../orders/order.entity';
 
 interface BankartTransactionResponse {
-  transactionId: string;
+  purchaseId: string;
   redirectUrl: string;
-  status: string;
+  success: boolean;
+  uuid: string;
 }
 
 @Injectable()
@@ -92,7 +93,7 @@ export class PaymentService {
       merchantTransactionId: order.id,
       amount: Number(createPaymentDto.amount).toFixed(2),
       currency: createPaymentDto.currency,
-      successUrl: `${createPaymentDto.returnUrl}/success`,
+      successUrl: `${createPaymentDto.returnUrl}/${order.id}`,
       cancelUrl: `${createPaymentDto.returnUrl}/cancel`,
       errorUrl: `${createPaymentDto.returnUrl}/error`,
       callbackUrl: `${createPaymentDto.returnUrl}/callback`,
@@ -113,36 +114,64 @@ export class PaymentService {
     const auth = Buffer.from(`${this.apiUsername}:${this.apiPassword}`).toString('base64');
 
 
+    // const signature = this.generateSignature(paymentData);
     console.log('Bankart auth config:', this.apiKey, this.sharedSecret, this.apiUrl); // remove in production
     console.log('Bankart auth:', auth); // remove in production
     console.log('url;', `${this.apiUrl}/transaction/${this.apiKey}/debit`);
+
+    const bodyString = JSON.stringify(paymentData); // do this once
+    const bodyHash = crypto.createHash('sha512').update(bodyString).digest('hex');
+
+
+    const contentType = 'application/json; charset=utf-8'; // as in docs
+    const date = new Date().toUTCString(); // must match Date header
+    const method = 'POST';
+    const requestUri = `/api/v3/transaction/${this.apiKey}/debit`; 
+    const message = [
+      method,
+      bodyHash,
+      contentType,
+      date,
+      requestUri
+    ].join('\n');
+
+    const signature = crypto
+      .createHmac('sha512', this.sharedSecret)
+      .update(message)
+      .digest('base64'); // NOT hex!  
+
+    const headers = {
+      'Content-Type': contentType,
+      'Authorization': `Basic ${auth}`, // base64 of apiUsername:apiPassword
+      'Date': date,
+      'X-Signature': signature, 
+    };
     try {
       const response = await axios.post<BankartTransactionResponse>(
         `${this.apiUrl}/transaction/${this.apiKey}/debit`,
         paymentData,
         {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Basic ${auth}`,
-            'Date': new Date().toUTCString()
-          },
+          headers,
         }
       );
       console.log(response,"responseee")
 
       const transaction = this.paymentTransactionRepository.create({
-        bankartTransactionId: response.data.transactionId,
+        bankartTransactionId: response.data.purchaseId,
+        uuid: response.data.uuid,
+        merchantTransactionId: order.id,
         amount: createPaymentDto.amount,
         currency: createPaymentDto.currency,
-        status: response.data.status || 'pending',
+        status: response.data.success ? 'completed' : 'failed',
         order,
-      });
+      }); 
 
       await this.paymentTransactionRepository.save(transaction);
       
       return {
         redirectUrl: response.data.redirectUrl,
         transactionId: transaction.id,
+        success: response.data.success,
       };
     } catch (error) {
       console.error('Bankart error:', error.response?.data || error.message || error);
@@ -154,53 +183,86 @@ export class PaymentService {
   }
 
   async refundPayment(transactionId: string) {
+    console.log("is refund")
     const transaction = await this.paymentTransactionRepository.findOne({
-      where: { id: transactionId },
+      where: { merchantTransactionId: transactionId },
       relations: ['order'],
     });
-
+  
     if (!transaction) {
       throw new NotFoundException('Transaction not found');
     }
-
+  
     if (transaction.status !== 'completed') {
       throw new BadRequestException('Transaction is not completed');
     }
-
+    console.log("is refund 2")
+  
     const refundData = {
-      merchantId: this.merchantId,
-      transactionId: transaction.bankartTransactionId,
-      amount: Math.round(transaction.amount * 100), // Convert to cents
-      timestamp: Math.floor(Date.now() / 1000),
+      merchantTransactionId: `${transaction.merchantTransactionId}-refund`,
+      referenceUuid: transaction.uuid,
+      amount: Number(transaction.amount).toFixed(2),
+      currency: transaction.currency,
+      callbackUrl: `${this.configService.get<string>('REFUND_CALLBACK_URL') || ''}`,
+      description: `Refund for order ${transaction.order.id}`,
     };
-
-    const signature = this.generateSignature(refundData);
-
+    console.log("is refund 3")
+  
+    const bodyString = JSON.stringify(refundData);
+    const bodyHash = crypto.createHash('sha512').update(bodyString).digest('hex');
+    const contentType = 'application/json; charset=utf-8';
+    const date = new Date().toUTCString();
+    const method = 'POST';
+    const requestUri = `/api/v3/transaction/${this.apiKey}/refund`;
+    const message = [method, bodyHash, contentType, date, requestUri].join('\n');
+  
+    const signature = crypto
+      .createHmac('sha512', this.sharedSecret)
+      .update(message)
+      .digest('base64');
+  
+    const auth = Buffer.from(`${this.apiUsername}:${this.apiPassword}`).toString('base64');
+  
+    console.log("is refund 4")
     try {
-      await axios.post(`${this.apiUrl}/v3/transaction/refund`, {
-        ...refundData,
-        signature,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-      });
-
-      transaction.status = 'refunded';
-      await this.paymentTransactionRepository.save(transaction);
-
-      // Update order status
-      transaction.order.status = 'refunded';
-      await this.orderRepository.save(transaction.order);
-
-      return { message: 'Refund processed successfully' };
+      const response = await axios.post<BankartTransactionResponse>(
+        `${this.apiUrl}/transaction/${this.apiKey}/refund`,
+        refundData,
+        {
+          headers: {
+            'Content-Type': contentType,
+            'Authorization': `Basic ${auth}`,
+            'Date': date,
+            'X-Signature': signature,
+          },
+        }
+      );
+      console.log("is refund 5")
+  
+      if (response.data.success) {
+        transaction.status = 'refunded';
+        await this.paymentTransactionRepository.save(transaction);
+  
+        transaction.order.status = 'refunded';
+        await this.orderRepository.save(transaction.order);
+  
+        return {
+          message: 'Refund processed successfully',
+          uuid: response.data.uuid,
+          purchaseId: response.data.purchaseId,
+        };
+      } else {
+        throw new Error('Unknown refund error');
+      }
     } catch (error) {
+      console.log(error)
+      console.log("is refund 6")
       throw new BadRequestException(
-        error.response?.data?.message || 'Failed to process refund'
+        error.response?.data?.message || error.message || 'Failed to process refund'
       );
     }
   }
+  
 
   async handleWebhook(body: any) {
     const providedSignature = body.signature;
