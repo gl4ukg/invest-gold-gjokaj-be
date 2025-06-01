@@ -115,9 +115,6 @@ export class PaymentService {
 
 
     // const signature = this.generateSignature(paymentData);
-    console.log('Bankart auth config:', this.apiKey, this.sharedSecret, this.apiUrl); // remove in production
-    console.log('Bankart auth:', auth); // remove in production
-    console.log('url;', `${this.apiUrl}/transaction/${this.apiKey}/debit`);
 
     const bodyString = JSON.stringify(paymentData); // do this once
     const bodyHash = crypto.createHash('sha512').update(bodyString).digest('hex');
@@ -154,7 +151,6 @@ export class PaymentService {
           headers,
         }
       );
-      console.log(response,"responseee")
 
       const transaction = this.paymentTransactionRepository.create({
         bankartTransactionId: response.data.purchaseId,
@@ -183,7 +179,6 @@ export class PaymentService {
   }
 
   async refundPayment(transactionId: string) {
-    console.log("is refund")
     const transaction = await this.paymentTransactionRepository.findOne({
       where: { merchantTransactionId: transactionId },
       relations: ['order'],
@@ -196,7 +191,6 @@ export class PaymentService {
     if (transaction.status !== 'completed') {
       throw new BadRequestException('Transaction is not completed');
     }
-    console.log("is refund 2")
   
     const refundData = {
       merchantTransactionId: `${transaction.merchantTransactionId}-refund`,
@@ -206,7 +200,6 @@ export class PaymentService {
       callbackUrl: `${this.configService.get<string>('REFUND_CALLBACK_URL') || ''}`,
       description: `Refund for order ${transaction.order.id}`,
     };
-    console.log("is refund 3")
   
     const bodyString = JSON.stringify(refundData);
     const bodyHash = crypto.createHash('sha512').update(bodyString).digest('hex');
@@ -223,7 +216,6 @@ export class PaymentService {
   
     const auth = Buffer.from(`${this.apiUsername}:${this.apiPassword}`).toString('base64');
   
-    console.log("is refund 4")
     try {
       const response = await axios.post<BankartTransactionResponse>(
         `${this.apiUrl}/transaction/${this.apiKey}/refund`,
@@ -237,7 +229,6 @@ export class PaymentService {
           },
         }
       );
-      console.log("is refund 5")
   
       if (response.data.success) {
         transaction.status = 'refunded';
@@ -255,8 +246,6 @@ export class PaymentService {
         throw new Error('Unknown refund error');
       }
     } catch (error) {
-      console.log(error)
-      console.log("is refund 6")
       throw new BadRequestException(
         error.response?.data?.message || error.message || 'Failed to process refund'
       );
