@@ -44,7 +44,7 @@ export class EmailService implements OnModuleInit {
       await Promise.race([
         this.transporter.verify(),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('SMTP connection timeout')), 5000)
+          setTimeout(() => reject(new Error('SMTP connection timeout')), 30000)
         )
       ]);
     } catch (error) {
