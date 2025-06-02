@@ -40,7 +40,7 @@ export class EmailController {
   async testEmail() {
     try {
       const result = await this.emailService.sendEmail(
-        'glaukthaqi15@gmail.com', // Replace with your email
+        'investgoldgjokaj2017@gmail.com', // Replace with your email
         'Test Email from Glauk',
         'This is a test email',
         '<h1>Test Email</h1><p>This is a test email from Glauk</p>'
