@@ -13,7 +13,10 @@ export class EmailService implements OnModuleInit {
       await this.initializeTransporter();
     } catch (error) {
       console.error('Failed to initialize email service, but continuing app startup:', {
-        error: error.message
+        error: error.message,
+        stack: error.stack,
+        code: error.code,
+        command: error.command
       });
       // Don't throw the error, let the app continue
     }
@@ -32,12 +35,16 @@ export class EmailService implements OnModuleInit {
       // Create transporter with App Password
       this.transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
+        port: 587,
+        secure: false,
         auth: {
           user: emailUser,
           pass: emailPassword,
         },
+        requireTLS: true,
+        tls: {
+          minVersion: 'TLSv1.2'
+        }
       });
 
       // Verify connection with a timeout
