@@ -1,50 +1,33 @@
-# Dockerfile
-
 # Stage 1: Build the application
-FROM node:18-alpine AS builder
+FROM node:18 AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Install build dependencies for sharp
-RUN apk add --no-cache python3 make g++
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
-# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+RUN npm ci
 
-# Copy the rest of the application
 COPY . .
 
-# Build the application
 RUN npm run build
 
 # Stage 2: Run the application
-FROM node:18-alpine
+FROM node:18
 
-# Install runtime dependencies for sharp
-RUN apk add --no-cache vips-dev
+RUN apt-get update && apt-get install -y libvips && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Install production dependencies
-COPY package*.json ./
-RUN npm install --only=production
+# Copy app, build output and dependencies from builder
+COPY --from=builder /app /app
+COPY --from=builder /app/node_modules ./node_modules
 
-# Copy built files from builder
-COPY --from=builder /app/dist ./dist
-
-# Copy .env file
 COPY .env ./
 
-# Switch to non-root user
 USER node
 
-# Expose the desired port
 EXPOSE 3000
 
-# Define the default command
 CMD ["node", "dist/main"]
