@@ -40,10 +40,17 @@ export class EmailController {
   async testEmail() {
     try {
       const result = await this.emailService.sendEmail(
-        'investgoldgjokaj2017@gmail.com', // Replace with your email
-        'Test Email from Glauk',
-        'This is a test email',
-        '<h1>Test Email</h1><p>This is a test email from Glauk</p>'
+        'glaukthaqi15@gmail.com',
+        'Test Email from Invest Gold Gjokaj',
+        'This is a test email from Invest Gold Gjokaj. If you receive this, please check both your inbox and spam folder.',
+        `<div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h1 style="color: #333;">Test Email from Invest Gold Gjokaj</h1>
+          <p>Hello,</p>
+          <p>This is a test email to verify our email delivery system is working correctly.</p>
+          <p>If you receive this email, please check both your inbox and spam folder.</p>
+          <hr>
+          <p style="color: #666; font-size: 12px;">This is an automated test message from Invest Gold Gjokaj.</p>
+        </div>`
       );
       return { success: true, messageId: result.messageId };
     } catch (error) {

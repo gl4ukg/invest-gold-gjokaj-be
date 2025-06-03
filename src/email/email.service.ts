@@ -1,12 +1,22 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import * as sgMail from '@sendgrid/mail';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class EmailService implements OnModuleInit {
   private transporter: nodemailer.Transporter;
+  private useSendGrid = false;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    // Try to initialize SendGrid if API key is available
+    const sendGridApiKey = this.configService.get<string>('SENDGRID_API_KEY');
+    if (sendGridApiKey) {
+      sgMail.setApiKey(sendGridApiKey);
+      this.useSendGrid = true;
+      console.log('Using SendGrid for email delivery');
+    }
+  }
 
   async onModuleInit() {
     try {
@@ -33,6 +43,13 @@ export class EmailService implements OnModuleInit {
       }
 
       // Create transporter with App Password
+      console.log('Initializing email transporter with config:', {
+        host: 'smtp.gmail.com',
+        port: 587,
+        user: emailUser,
+        tls: true
+      });
+
       this.transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
@@ -43,15 +60,18 @@ export class EmailService implements OnModuleInit {
         },
         requireTLS: true,
         tls: {
-          minVersion: 'TLSv1.2'
-        }
+          minVersion: 'TLSv1.2',
+          rejectUnauthorized: false // temporarily disable strict SSL to test connection
+        },
+        debug: true, // Enable debug logging
+        logger: true  // Enable logger
       });
 
       // Verify connection with a timeout
       await Promise.race([
         this.transporter.verify(),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('SMTP connection timeout')), 30000)
+          setTimeout(() => reject(new Error('SMTP connection timeout')), 60000)
         )
       ]);
     } catch (error) {
@@ -62,6 +82,32 @@ export class EmailService implements OnModuleInit {
       });
       // Set transporter to null so we can retry later
       this.transporter = null;
+      throw error;
+    }
+  }
+
+  private async sendWithSendGrid(to: string, subject: string, text: string, html: string) {
+    try {
+      const msg = {
+        to,
+        from: this.configService.get<string>('EMAIL_USER'),
+        subject,
+        text,
+        html,
+      };
+      console.log('Sending email via SendGrid:', { to, subject, from: msg.from });
+      const result = await sgMail.send(msg);
+      console.log('SendGrid response:', {
+        statusCode: result[0].statusCode,
+        headers: result[0].headers,
+        body: result[0].body
+      });
+      return { messageId: result[0].headers['x-message-id'] };
+    } catch (error) {
+      console.error('SendGrid error:', {
+        message: error.message,
+        response: error.response?.body,
+      });
       throw error;
     }
   }
@@ -80,6 +126,9 @@ export class EmailService implements OnModuleInit {
         html,
       };
 
+      if (this.useSendGrid) {
+        return await this.sendWithSendGrid(to, subject, text, html);
+      }
       const result = await this.transporter.sendMail(mailOptions);
       return result;
     } catch (error) {
