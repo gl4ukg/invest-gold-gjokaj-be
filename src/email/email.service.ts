@@ -20,7 +20,10 @@ export class EmailService implements OnModuleInit {
 
   async onModuleInit() {
     try {
-      await this.initializeTransporter();
+      // Only initialize SMTP if SendGrid is not available
+      if (!this.useSendGrid) {
+        await this.initializeTransporter();
+      }
     } catch (error) {
       console.error('Failed to initialize email service, but continuing app startup:', {
         error: error.message,

@@ -66,7 +66,12 @@ export class AuthService {
         // Return only non-sensitive user data and the token
         return {
           token,
-          user,
+          user: {
+            id: user.id,
+            name: user.name,
+            surname: user.surname,
+            email: user.email,
+          }
         };
       }
     }
