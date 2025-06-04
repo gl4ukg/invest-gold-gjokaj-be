@@ -224,12 +224,12 @@ export class OrdersService {
     
       
       // Send customer email first
-      const customerEmailResult = await this.emailService.sendEmail(
-        completeOrder.email,
-        emailSubject,
-        emailText,
-        emailHtml
-      );
+      // const customerEmailResult = await this.emailService.sendEmail(
+      //   completeOrder.email,
+      //   emailSubject,
+      //   emailText,
+      //   emailHtml
+      // );
 
       // Prepare admin email
       const adminEmailSubject = 'Porosi e Re Pranuar';
@@ -396,12 +396,12 @@ export class OrdersService {
 
       
       // Send admin email
-      const adminEmailResult = await this.emailService.sendEmail(
-        'investgoldgjokaj2017@gmail.com',
-        adminEmailSubject,
-        adminEmailText,
-        adminEmailHtml
-      );
+      // const adminEmailResult = await this.emailService.sendEmail(
+      //   'investgoldgjokaj2017@gmail.com',
+      //   adminEmailSubject,
+      //   adminEmailText,
+      //   adminEmailHtml
+      // );
 
       return completeOrder;
 
