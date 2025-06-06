@@ -19,19 +19,21 @@ export class EmailService implements OnModuleInit {
   }
 
   async onModuleInit() {
+    // Delay SMTP setup if SendGrid is already enabled
+    if (this.useSendGrid) {
+      console.log('Skipping SMTP initialization because SendGrid is configured.');
+      return;
+    }
+  
     try {
-      // Only initialize SMTP if SendGrid is not available
-      if (!this.useSendGrid) {
-        await this.initializeTransporter();
-      }
+      await this.initializeTransporter();
     } catch (error) {
       console.error('Failed to initialize email service, but continuing app startup:', {
         error: error.message,
         stack: error.stack,
         code: error.code,
-        command: error.command
+        command: error.command,
       });
-      // Don't throw the error, let the app continue
     }
   }
 
@@ -117,31 +119,30 @@ export class EmailService implements OnModuleInit {
 
   async sendEmail(to: string, subject: string, text: string, html: string) {
     try {
+      if (this.useSendGrid) {
+        return await this.sendWithSendGrid(to, subject, text, html);
+      }
+  
       if (!this.transporter) {
         await this.initializeTransporter();
       }
-
-      const mailOptions = {
+  
+      return await this.transporter.sendMail({
         from: this.configService.get<string>('EMAIL_USER'),
         to,
         subject,
         text,
         html,
-      };
-
-      if (this.useSendGrid) {
-        return await this.sendWithSendGrid(to, subject, text, html);
-      }
-      const result = await this.transporter.sendMail(mailOptions);
-      return result;
+      });
     } catch (error) {
       console.error('Error sending email:', {
         name: error.name,
         message: error.message,
         code: error.code,
-        stack: error.stack
+        stack: error.stack,
       });
       throw error;
     }
   }
+  
 }
