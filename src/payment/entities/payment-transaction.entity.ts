@@ -1,4 +1,4 @@
-import { Order } from "src/orders/order.entity";
+import { Order } from "../../orders/order.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 // src/payment/entities/payment-transaction.entity.ts

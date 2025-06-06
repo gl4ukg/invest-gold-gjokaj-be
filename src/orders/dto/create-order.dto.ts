@@ -1,7 +1,7 @@
 import { IsString, IsNumber, IsEmail, IsArray, ValidateNested, IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ConfiguratorState } from './configurator';
-import { Products } from 'src/products/products.entity';
+import { Products } from '../../products/products.entity';
 
 export class OrderItemDto {
   @ValidateNested()

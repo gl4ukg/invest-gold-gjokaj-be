@@ -397,7 +397,7 @@ export class OrdersService {
       
       // Send admin email
       const adminEmailResult = await this.emailService.sendEmail(
-        'investgoldgjokaj2017@gmail.com',
+        'glauk@codespherellc.com',
         adminEmailSubject,
         adminEmailText,
         adminEmailHtml

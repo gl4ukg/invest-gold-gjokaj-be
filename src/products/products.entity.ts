@@ -1,5 +1,5 @@
-import { Categories } from 'src/categories/categories.entity';
-import { OrderItem } from 'src/orders/order-item.entity';
+import { Categories } from '../categories/categories.entity';
+import { OrderItem } from '../orders/order-item.entity';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('products')
