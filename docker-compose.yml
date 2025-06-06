@@ -10,6 +10,15 @@ services:
       - POSTGRES_USER=nest_user
       - POSTGRES_PASSWORD=nest_pass
       - POSTGRES_DB=invest_gold_gjokaj
+      - JWT_SECRET=hellothere123
+      - EMAIL_USER=investgoldgjokaj2017@gmail.com
+      - EMAIL_APP_PASSWORD=ayex zlbf qqjz jtkw
+      - BANKART_API_KEY=260291IP026291-SIM
+      - BANKART_SHARED_SECRET=ec436ec75011c59f16c8c8825675610f3a9c391879374f09d0
+      - BANKART_API_URL=https://gateway.bankart.si/api/v3
+      - BANKART_API_USERNAME=API0260291INVESTGOLDSHPK
+      - BANKART_API_PASSWORD=TungjaTjetaa123.
+      - SENDGRID_API_KEY=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
     depends_on:
       db:
         condition: service_healthy
