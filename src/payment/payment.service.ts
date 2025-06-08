@@ -76,15 +76,15 @@ export class PaymentService {
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException('Porosia nuk u gjet!');
     }
 
     if (order.status !== 'pending') {
-      throw new BadRequestException('Order is not in pending state');
+      throw new BadRequestException('Porosia nuk është në gjendje pritjeje');
     }
 
     if (!order.shippingAddress) {
-      throw new BadRequestException('Shipping address is required');
+      throw new BadRequestException('Adresa e dërgesës është e detyrueshme');
     }
 
     // Split fullName into firstName and lastName
@@ -175,7 +175,7 @@ export class PaymentService {
       console.error('Bankart error:', error.response?.data || error.message || error);
 
       throw new BadRequestException(
-        error.response?.data?.message || 'Failed to create payment'
+        error.response?.data?.message || 'Dështoi në krijimin e pagesës'
       );
     }
   }
@@ -187,11 +187,11 @@ export class PaymentService {
     });
   
     if (!transaction) {
-      throw new NotFoundException('Transaction not found');
+      throw new NotFoundException('Transaksioni nuk u gjet');
     }
   
     if (transaction.status !== 'completed') {
-      throw new BadRequestException('Transaction is not completed');
+      throw new BadRequestException('Transaksioni nuk është përfunduar');
     }
   
     const refundData = {
@@ -272,54 +272,14 @@ export class PaymentService {
           purchaseId: response.data.purchaseId,
         };
       } else {
-        throw new Error('Unknown refund error');
+        throw new Error('Gabim i panjohur i rimbursimit');
       }
     } catch (error) {
       throw new BadRequestException(
-        error.response?.data?.message || error.message || 'Failed to process refund'
+        error.response?.data?.message || error.message || 'Dështoi në përpunimin e rimbursimit.'
       );
     }
   }
   
 
-  async handleWebhook(body: any) {
-    console.log('Bankart webhook hit:', body);
-    const providedSignature = body.signature;
-    delete body.signature;
-
-    const calculatedSignature = this.generateSignature(body);
-
-    if (providedSignature !== calculatedSignature) {
-      throw new BadRequestException('Invalid signature');
-    }
-
-    const transaction = await this.paymentTransactionRepository.findOne({
-      where: { bankartTransactionId: body.transactionId },
-      relations: ['order'],
-    });
-
-    if (!transaction) {
-      throw new NotFoundException('Transaction not found');
-    }
-
-    transaction.status = body.status;
-    if (body.errorMessage) {
-      transaction.errorMessage = body.errorMessage;
-    }
-
-    await this.paymentTransactionRepository.save(transaction);
-
-    // Update order status based on payment status
-    if (body.status === 'completed') {
-      transaction.order.status = 'processing';
-      transaction.order.paymentStatus = 'success'; // ✅ this line
-      await this.orderRepository.save(transaction.order);
-    } else if (body.status === 'failed') {
-      transaction.order.status = 'cancelled';
-      transaction.order.paymentStatus = 'failed'; // ✅ this line
-      await this.orderRepository.save(transaction.order);
-    }
-
-    return { message: 'Webhook processed successfully' };
-  }
 }
