@@ -44,6 +44,9 @@ export class Order {
   @Column({ default: 'pending' })
   status: string;
 
+  @Column({ default: 'pending' })
+  paymentStatus: 'pending' | 'success' | 'failed';
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import { PaymentTransaction } from './entities/payment-transaction.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Order } from '../orders/order.entity';
+import { EmailService } from '../email/email.service';
 
 interface BankartTransactionResponse {
   purchaseId: string;
@@ -23,6 +24,7 @@ export class PaymentService {
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   private get apiUrl() {
@@ -93,10 +95,10 @@ export class PaymentService {
       merchantTransactionId: order.id,
       amount: Number(createPaymentDto.amount).toFixed(2),
       currency: createPaymentDto.currency,
-      successUrl: `${createPaymentDto.returnUrl}/${order.id}`,
+      successUrl: `${createPaymentDto.returnUrl}/${order.id}/callback?source=bankart`,
       cancelUrl: `${createPaymentDto.returnUrl}/cancel`,
       errorUrl: `${createPaymentDto.returnUrl}/error`,
-      callbackUrl: `${createPaymentDto.returnUrl}/callback`,
+      callbackUrl: `${createPaymentDto.returnUrl}/${order.id}/callback`,
       description: `Order ${order.id}`,
       customer: {
         email: order.email,
@@ -237,8 +239,35 @@ export class PaymentService {
         transaction.order.status = 'refunded';
         await this.orderRepository.save(transaction.order);
   
+        // Send email to client about refund
+        const emailSubject = 'Konfirmimi i Rimbursimit';
+        const emailText = `Rimbursimi për porosinë tuaj ${transaction.order.id} është pranuar dhe do të përpunohet në ditët në vijim.`;
+        const emailHtml = `
+          <div style="font-family: system-ui, -apple-system, sans-serif; background-color: #f9fafb; padding: 20px;">
+            <h1 style="color: #1f2937;">Konfirmimi i Rimbursimit</h1>
+            <p>I/E nderuar klient,</p>
+            <p>Kërkesa juaj për rimbursim për porosinë <strong>${transaction.order.id}</strong> është pranuar me sukses.</p>
+            <p>Detajet e rimbursimit:</p>
+            <ul>
+              <li>Shuma: ${transaction.amount} ${transaction.currency}</li>
+              <li>ID e Porosisë: ${transaction.order.id}</li>
+            </ul>
+            <p>Rimbursimi do të përpunohet në ditët në vijim dhe do të reflektohet në llogarinë tuaj bankare.</p>
+            <p>Ju faleminderit për mirëkuptimin!</p>
+            <p>Për çdo pyetje ose paqartësi, mos hezitoni të na kontaktoni.</p>
+            <p style="margin-top: 20px;">Me respekt,<br>Ekipi i Invest Gold Gjokaj</p>
+          </div>
+        `;
+
+        await this.emailService.sendEmail(
+          transaction.order.email,
+          emailSubject,
+          emailText,
+          emailHtml
+        );
+
         return {
-          message: 'Refund processed successfully',
+          message: 'Rimbursimi u përpunua me sukses',
           uuid: response.data.uuid,
           purchaseId: response.data.purchaseId,
         };
@@ -254,6 +283,7 @@ export class PaymentService {
   
 
   async handleWebhook(body: any) {
+    console.log('Bankart webhook hit:', body);
     const providedSignature = body.signature;
     delete body.signature;
 
@@ -281,10 +311,12 @@ export class PaymentService {
 
     // Update order status based on payment status
     if (body.status === 'completed') {
-      transaction.order.status = 'paid';
+      transaction.order.status = 'processing';
+      transaction.order.paymentStatus = 'success'; // ✅ this line
       await this.orderRepository.save(transaction.order);
     } else if (body.status === 'failed') {
-      transaction.order.status = 'payment_failed';
+      transaction.order.status = 'cancelled';
+      transaction.order.paymentStatus = 'failed'; // ✅ this line
       await this.orderRepository.save(transaction.order);
     }
 
