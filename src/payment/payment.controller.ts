@@ -16,9 +16,4 @@ export class PaymentController {
   async refundPayment(@Param('transactionId') transactionId: string) {
     return this.paymentService.refundPayment(transactionId);
   }
-
-  @Post('webhook')
-  async handleWebhook(@Body() body: any) {
-    return this.paymentService.handleWebhook(body);
-  }
 }
