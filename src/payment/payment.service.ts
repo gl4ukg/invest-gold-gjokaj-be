@@ -304,7 +304,7 @@ export class PaymentService {
     }
   
     // Update based on status from Bankart
-    if (status === 'completed') {
+    if (payload.result === 'OK') {
       order.status = 'processing';
       order.paymentStatus = 'success';
       transaction.status = 'completed';
@@ -609,7 +609,7 @@ export class PaymentService {
           adminEmailText,
           adminEmailHtml
         );
-    } else if (status === 'failed') {
+    } else {
       order.status = 'cancelled';
       order.paymentStatus = 'failed';
       transaction.status = 'failed';
