@@ -616,7 +616,7 @@ export class PaymentService {
           adminEmailText,
           adminEmailHtml
         );
-    } else {
+    } else if (transaction.status !== 'refunded') {
       order.status = 'cancelled';
       order.paymentStatus = 'failed';
       transaction.status = 'failed';
