@@ -17,15 +17,15 @@ export class PaymentController {
     return this.paymentService.refundPayment(transactionId);
   }
 
-  // @Post('callback')
-  // async handleBankartCallback(@Body() body: any) {
-  //   return this.paymentService.handleCallback(body);
-  // }
-
   @Post('callback')
-  async handleBankartCallback(@Body() body: any, @Headers() headers: any) {
-    console.log('[BANKART CALLBACK]', body);
-    console.log('[BANKART HEADERS]', headers);
-    return this.paymentService.handleBankartCallback(body, headers);
+  async handleBankartCallback(@Body() body: any) {
+    return this.paymentService.handleCallback(body);
   }
+
+  // @Post('callback')
+  // async handleBankartCallback(@Body() body: any, @Headers() headers: any) {
+  //   console.log('[BANKART CALLBACK]', body);
+  //   console.log('[BANKART HEADERS]', headers);
+  //   return this.paymentService.handleBankartCallback(body, headers);
+  // }
 }
