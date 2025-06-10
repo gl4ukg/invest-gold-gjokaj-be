@@ -160,7 +160,7 @@ export class PaymentService {
         merchantTransactionId: order.id,
         amount: createPaymentDto.amount,
         currency: createPaymentDto.currency,
-        status: response.data.success ? 'completed' : 'failed',
+        status: 'pending',
         order,
       }); 
 
