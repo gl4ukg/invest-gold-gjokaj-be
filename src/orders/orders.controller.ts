@@ -32,9 +32,4 @@ export class OrdersController {
   ): Promise<Order> {
     return this.orderService.updateOrderStatus(id, updateStatusDto);
   }
-
-  @Patch(':id/mark-paid')
-  markOrderAsPaid(@Param('id') id: string) {
-    return this.orderService.markAsPaid(id);
-  }
 }

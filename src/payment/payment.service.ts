@@ -303,6 +303,11 @@ export class PaymentService {
       throw new NotFoundException('Transaction not found for callback');
     }
   
+    if (transaction.status === 'completed') {
+      console.log(`[BANKART CALLBACK] Already processed transaction: ${transaction.id}`);
+      return { message: 'Already processed' };
+    }
+
     // Update based on status from Bankart
     if (payload.result === 'OK') {
       order.status = 'processing';
