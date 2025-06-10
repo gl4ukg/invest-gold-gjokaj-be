@@ -308,6 +308,11 @@ export class PaymentService {
       return { message: 'Already processed' };
     }
 
+    if (transaction.status === 'refunded') {
+      console.log(`[BANKART CALLBACK] Skipping email for refunded transaction: ${transaction.id}`);
+      return { message: 'Refund callback received, no email sent' };
+    }
+
     // Update based on status from Bankart
     if (payload.result === 'OK') {
       order.status = 'processing';
@@ -629,56 +634,5 @@ export class PaymentService {
   
     return { message: 'Callback processed successfully' };
   }
-  // async handleBankartCallback(body: any, headers: any) {
-  //   const receivedSignature = headers['x-signature'];
-  //   const contentType = headers['content-type'];
-  //   const date = headers['date'];
-  //   const method = 'POST';
-  //   const requestUri = `/api/v3/transaction/${this.apiKey}/callback`;
-  
-  //   const bodyString = JSON.stringify(body);
-  //   const bodyHash = crypto.createHash('sha512').update(bodyString).digest('hex');
-  
-  //   const message = [method, bodyHash, contentType, date, requestUri].join('\n');
-  
-  //   const expectedSignature = crypto
-  //     .createHmac('sha512', this.sharedSecret)
-  //     .update(message)
-  //     .digest('base64');
-  
-  //   // Validate signature
-  //   if (receivedSignature !== expectedSignature) {
-  //     console.warn('[BANKART CALLBACK] Invalid signature');
-  //     throw new BadRequestException('Invalid signature');
-  //   }
-  
-  //   // Log body for transparency
-  //   console.log('[BANKART CALLBACK] Valid callback received', body);
-  
-  //   const transaction = await this.paymentTransactionRepository.findOne({
-  //     where: { uuid: body.uuid },
-  //     relations: ['order'],
-  //   });
-  
-  //   if (!transaction) {
-  //     throw new NotFoundException('Transaction not found');
-  //   }
-  
-  //   // Update transaction and order status
-  //   if (body.success === true || body.returnType === 'FINISHED') {
-  //     transaction.status = 'completed';
-  //     transaction.order.status = 'processing';
-  //     transaction.order.paymentStatus = 'success';
-  //   } else {
-  //     transaction.status = 'failed';
-  //     transaction.order.status = 'cancelled';
-  //     transaction.order.paymentStatus = 'failed';
-  //   }
-  
-  //   await this.paymentTransactionRepository.save(transaction);
-  //   await this.orderRepository.save(transaction.order);
-  
-  //   return { received: true };
-  // }
   
 }
