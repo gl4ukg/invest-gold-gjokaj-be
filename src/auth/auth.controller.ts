@@ -73,11 +73,6 @@ export class AuthController {
     @Body('password') password: string,
     @Body('confirmationPassword') confirmationPassword: string,
   ) {
-    console.log('Reset password endpoint hit with body:', {
-      tokenLength: token?.length,
-      hasPassword: !!password,
-      hasConfirmationPassword: !!confirmationPassword
-    });
     return this.authService.resetPasswordWithToken(token, password, confirmationPassword);
   }
 }

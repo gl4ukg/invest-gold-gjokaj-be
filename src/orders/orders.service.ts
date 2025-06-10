@@ -223,7 +223,6 @@ export class OrdersService {
     `;
     
       if(completeOrder.paymentMethod === 'cash_on_delivery') {
-        console.log("cash_on_delivery")
         // Send customer email first
         const customerEmailResult = await this.emailService.sendEmail(
           completeOrder.email,
@@ -398,7 +397,6 @@ export class OrdersService {
 
       
       if(completeOrder.paymentMethod === 'cash_on_delivery') {
-        console.log("cash_on_delivery 2")
       // Send admin email
         const adminEmailResult = await this.emailService.sendEmail(
           'glauk@codespherellc.com',

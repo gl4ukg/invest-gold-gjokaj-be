@@ -284,7 +284,6 @@ export class PaymentService {
   async handleCallback(payload: any) {
     const { merchantTransactionId, status, uuid } = payload;
   
-    console.log('[BANKART CALLBACK]', payload);
   
     const order = await this.orderRepository.findOne({
       where: { id: merchantTransactionId },
@@ -302,14 +301,12 @@ export class PaymentService {
     if (!transaction) {
       throw new NotFoundException('Transaction not found for callback');
     }
-  console.log(transaction,"transaction")
+
     if (transaction.status === 'completed') {
-      console.log(`[BANKART CALLBACK] Already processed transaction: ${transaction.id}`);
       return { message: 'Already processed' };
     }
 
     if (transaction.status === 'refunded') {
-      console.log(`[BANKART CALLBACK] Skipping email for refunded transaction: ${transaction.id}`);
       return { message: 'Refund callback received, no email sent' };
     }
 
@@ -629,8 +626,6 @@ export class PaymentService {
   
     await this.orderRepository.save(order);
     await this.paymentTransactionRepository.save(transaction);
-  
-    console.log(`✅ Order ${order.id} marked as ${order.paymentStatus} via callback.`);
   
     return { message: 'Callback processed successfully' };
   }

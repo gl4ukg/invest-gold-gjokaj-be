@@ -165,7 +165,6 @@ export class AuthService {
   
 
   async resetPasswordWithToken(token: string, password: string, confirmationPassword: string): Promise<{ message: string }> {
-    console.log('Received reset password request with token:', { token: token.substring(0, 20) + '...' });
     
     // Validate password strength
     const { isValid, error } = validatePassword(password);
@@ -174,37 +173,29 @@ export class AuthService {
     }
 
     if (password !== confirmationPassword) {
-      console.log('Password mismatch error');
       throw new ConflictException('Fjalekalimi nuk eshte i njejte');
     }
 
     let payload: { userId: string };
     try {
       payload = this.jwtService.verify(token);
-      console.log('Token verified successfully, userId:', payload.userId);
     } catch (err) {
-      console.error('Token verification failed:', err.message);
       throw new UnauthorizedException('Ky link ka skaduar');
     }
 
     const user = await this.userService.findById(payload.userId);
-    console.log('User found:', { userId: payload.userId, hasResetToken: !!user?.resetPasswordToken });
     
     if (!user || !user.resetPasswordToken) {
-      console.log('Invalid reset attempt - user not found or no reset token');
       throw new UnauthorizedException('Ky link ka skaduar');
     }
 
     // Verify the token against the stored hash
     const isTokenValid = await bcrypt.compare(token, user.resetPasswordToken);
-    console.log('Token validation result:', isTokenValid);
     
     if (!isTokenValid) {
-      console.log('Invalid reset token - bcrypt verification failed');
       throw new UnauthorizedException('Ky link ka skaduar');
     }
 
-    console.log('Proceeding with password reset for user:', user.id);
     await this.userService.editUser(user.id, {
       password: password,
       resetPasswordToken: null,

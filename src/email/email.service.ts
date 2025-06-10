@@ -14,7 +14,6 @@ export class EmailService implements OnModuleInit {
     if (sendGridApiKey) {
       sgMail.setApiKey(sendGridApiKey);
       this.useSendGrid = true;
-      console.log('Using SendGrid for email delivery');
     }
   }
 
@@ -46,14 +45,6 @@ export class EmailService implements OnModuleInit {
       if (!emailUser || !emailPassword) {
         throw new Error('Missing email configuration. Please check EMAIL_USER and EMAIL_APP_PASSWORD in your environment variables.');
       }
-
-      // Create transporter with App Password
-      console.log('Initializing email transporter with config:', {
-        host: 'smtp.gmail.com',
-        port: 587,
-        user: emailUser,
-        tls: true
-      });
 
       this.transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
@@ -100,13 +91,7 @@ export class EmailService implements OnModuleInit {
         text,
         html,
       };
-      console.log('Sending email via SendGrid:', { to, subject, from: msg.from });
       const result = await sgMail.send(msg);
-      console.log('SendGrid response:', {
-        statusCode: result[0].statusCode,
-        headers: result[0].headers,
-        body: result[0].body
-      });
       return { messageId: result[0].headers['x-message-id'] };
     } catch (error) {
       console.error('SendGrid error:', {
