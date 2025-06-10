@@ -288,7 +288,7 @@ export class PaymentService {
   
     const order = await this.orderRepository.findOne({
       where: { id: merchantTransactionId },
-      relations: ['shippingAddress'],
+      relations: ['shippingAddress', 'items', 'items.product'],
     });
   
     if (!order) {
