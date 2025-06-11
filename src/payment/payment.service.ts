@@ -186,6 +186,7 @@ export class PaymentService {
       amount: Number(transaction.amount).toFixed(2),
       currency: transaction.currency,
       callbackUrl: 'https://api.investgoldgjokaj.com/payment/callback',
+      // callbackUrl: `${this.configService.get<string>('REFUND_CALLBACK_URL') || ''}`,
       description: `Refund for order ${transaction.order.id}`,
     };
   
@@ -270,9 +271,13 @@ export class PaymentService {
   async handleCallback(payload: any) {
     const { merchantTransactionId, status, uuid } = payload;
   
-  
+    const isRefund = merchantTransactionId.endsWith('-refund');
+    const baseMerchantTransactionId = isRefund
+      ? merchantTransactionId.replace('-refund', '')
+      : merchantTransactionId;
+
     const order = await this.orderRepository.findOne({
-      where: { id: merchantTransactionId },
+      where: { id: baseMerchantTransactionId },
       relations: ['shippingAddress', 'items', 'items.product'],
     });
   
@@ -281,7 +286,7 @@ export class PaymentService {
     }
   
     const transaction = await this.paymentTransactionRepository.findOne({
-      where: { merchantTransactionId },
+      where: { merchantTransactionId: baseMerchantTransactionId },
     });
   
     if (!transaction) {
