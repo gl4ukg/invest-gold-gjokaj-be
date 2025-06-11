@@ -102,7 +102,7 @@ export class PaymentService {
       successUrl: `${createPaymentDto.returnUrl}/${order.id}`,
       cancelUrl: `${createPaymentDto.returnUrl}/cancel`,
       errorUrl: `${createPaymentDto.returnUrl}/error`,
-      callbackUrl: this.callbackUrl,
+      callbackUrl: 'https://api.investgoldgjokaj.com/payment/callback',
       description: `Order ${order.id}`,
       customer: {
         email: order.email,
@@ -203,7 +203,7 @@ export class PaymentService {
       referenceUuid: transaction.uuid,
       amount: Number(transaction.amount).toFixed(2),
       currency: transaction.currency,
-      callbackUrl: this.callbackUrl,
+      callbackUrl: 'https://api.investgoldgjokaj.com/payment/callback',
       description: `Refund for order ${transaction.order.id}`,
     };
   
