@@ -55,24 +55,6 @@ export class PaymentService {
     return this.configService.get<string>('BANKART_CALLBACK_URL');
   }
 
-  private generateSignature(data: Record<string, any>): string {
-    const sortedData = Object.keys(data)
-      .sort()
-      .reduce((acc, key) => {
-        acc[key] = data[key];
-        return acc;
-      }, {});
-
-    const dataString = Object.entries(sortedData)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('|');
-
-    return crypto
-      .createHmac('sha512', this.sharedSecret)
-      .update(dataString)
-      .digest('hex');
-  }
-
   async createPayment(createPaymentDto: CreatePaymentDto) {
     const order = await this.orderRepository.findOne({ 
       where: { id: createPaymentDto.orderId },

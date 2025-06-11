@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Param, UseGuards, Headers } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards, Headers, Res } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { Response } from 'express';
 
 @Controller('payment')
 export class PaymentController {
@@ -18,7 +19,8 @@ export class PaymentController {
   }
 
   @Post('callback')
-  async handleBankartCallback(@Body() body: any) {
-    return this.paymentService.handleCallback(body);
+  async handleBankartCallback(@Body() body: any, @Res() res: Response) {
+    await this.paymentService.handleCallback(body);
+    return res.status(200).send('OK');
   }
 }
