@@ -5,7 +5,7 @@ import { json, urlencoded } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: ['http://localhost:3002', 'https://invest-gold-gjokaj-fe.vercel.app', 'https://investgoldgjokaj.com'],
+    origin: ['http://localhost:3002', 'https://invest-gold-gjokaj-fe.vercel.app', 'https://investgoldgjokaj.com', 'https://invest-gold-gjokaj-fe-gl4ukgs-projects.vercel.app/sq'],
     credentials: true,
   });
   app.use(json({ limit: '50mb' }));
