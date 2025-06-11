@@ -51,6 +51,10 @@ export class PaymentService {
     return this.configService.get<string>('BANKART_API_PASSWORD');
   }
 
+  private get callbackUrl() {
+    return this.configService.get<string>('BANKART_CALLBACK_URL');
+  }
+
   private generateSignature(data: Record<string, any>): string {
     const sortedData = Object.keys(data)
       .sort()
@@ -98,7 +102,7 @@ export class PaymentService {
       successUrl: `${createPaymentDto.returnUrl}/${order.id}`,
       cancelUrl: `${createPaymentDto.returnUrl}/cancel`,
       errorUrl: `${createPaymentDto.returnUrl}/error`,
-      callbackUrl: `https://api.investgoldgjokaj.com/payment/callback`,
+      callbackUrl: this.callbackUrl,
       description: `Order ${order.id}`,
       customer: {
         email: order.email,
@@ -199,7 +203,7 @@ export class PaymentService {
       referenceUuid: transaction.uuid,
       amount: Number(transaction.amount).toFixed(2),
       currency: transaction.currency,
-      callbackUrl: `${this.configService.get<string>('REFUND_CALLBACK_URL') || ''}`,
+      callbackUrl: this.callbackUrl,
       description: `Refund for order ${transaction.order.id}`,
     };
   
@@ -309,7 +313,7 @@ export class PaymentService {
     if (transaction.status === 'refunded') {
       return { message: 'Refund callback received, no email sent' };
     }
-
+console.log(payload,"payload")
     // Update based on status from Bankart
     if (payload.result === 'OK') {
       order.status = 'processing';
@@ -616,7 +620,7 @@ export class PaymentService {
           adminEmailText,
           adminEmailHtml
         );
-    } else if (transaction.status !== 'refunded') {
+    } else if (payload.status !== 'refunded') {
       order.status = 'cancelled';
       order.paymentStatus = 'failed';
       transaction.status = 'failed';
