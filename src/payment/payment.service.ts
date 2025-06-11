@@ -270,6 +270,7 @@ export class PaymentService {
   
   async handleCallback(payload: any) {
     const { merchantTransactionId, status, uuid } = payload;
+    console.log(payload,"payload")
   
     const isRefund = merchantTransactionId.endsWith('-refund');
     const baseMerchantTransactionId = isRefund
@@ -288,6 +289,8 @@ export class PaymentService {
     const transaction = await this.paymentTransactionRepository.findOne({
       where: { merchantTransactionId: baseMerchantTransactionId },
     });
+
+    console.log(transaction,"transaction")
   
     if (!transaction) {
       throw new NotFoundException('Transaction not found for callback');
@@ -300,7 +303,6 @@ export class PaymentService {
     if (transaction.status === 'refunded') {
       return { message: 'Refund callback received, no email sent' };
     }
-console.log(payload,"payload")
     // Update based on status from Bankart
     if (payload.result === 'OK') {
       order.status = 'processing';
