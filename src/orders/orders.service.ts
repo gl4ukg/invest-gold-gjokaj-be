@@ -399,7 +399,7 @@ export class OrdersService {
       if(completeOrder.paymentMethod === 'cash_on_delivery') {
       // Send admin email
         const adminEmailResult = await this.emailService.sendEmail(
-          'glauk@codespherellc.com',
+          'info@investgoldgjokaj.com',
           adminEmailSubject,
           adminEmailText,
           adminEmailHtml

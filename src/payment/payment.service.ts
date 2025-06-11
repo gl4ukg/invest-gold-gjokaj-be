@@ -603,7 +603,7 @@ export class PaymentService {
       
       // Send admin email
         const adminEmailResult = await this.emailService.sendEmail(
-          'glauk@codespherellc.com',
+          'info@investgoldgjokaj.com',
           adminEmailSubject,
           adminEmailText,
           adminEmailHtml
