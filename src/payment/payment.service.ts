@@ -93,8 +93,7 @@ export class PaymentService {
         billingAddress1: order.shippingAddress.address,
         billingCity: order.shippingAddress.city,
         billingCountry: order.shippingAddress.country,
-        billingPostcode: order.shippingAddress.postalCode,
-        billingPhone: order.shippingAddress.phone
+        billingPostcode: order.shippingAddress.postalCode
       },
       language: 'en'
     };
