@@ -351,7 +351,7 @@ export class PaymentService {
                 <td style="width: 33%; padding: 10px; vertical-align: top;">
                   <strong>Metali:</strong><br>
                   Lloji: ${colorTypes[item.configuration?.preciousMetal?.colorType]}<br>
-                  ${item.configuration?.preciousMetal?.colors.map(c => `${c.metalColor} (${c.fineness}) (${c.polishType})`).join('<br>')}
+                  ${item.configuration?.preciousMetal?.colors.map((c, idx) => `Ngjyra ${idx + 1}: ${c.metalColor} (${c.fineness}) (${c.polishType})`).join('<br>')}
                   ${ item.configuration?.preciousMetal?.colors.length > 1 ? `<br>Forma: ${item.configuration?.preciousMetal?.shape.category} ${item.configuration?.preciousMetal?.shape.variant}` : ''}
                   ${item.configuration?.preciousMetal?.colors.length > 1 ? `${item.configuration?.preciousMetal?.shape.heightPercentage !== undefined ? `<br>Lartesia: ${item.configuration?.preciousMetal?.shape.heightPercentage}%` : ''}` : ''}
                   ${item.configuration?.preciousMetal?.colors.length > 1 ? `${item.configuration?.preciousMetal?.shape.waveCount !== undefined ? `<br>Numri i valave: ${item.configuration?.preciousMetal?.shape.waveCount}` : ''}` : ''}
@@ -434,10 +434,18 @@ export class PaymentService {
               </tr>
               ${item.configuration?.engraving ? `
                 <tr>
-                  <td colspan="3" style="padding: 10px;">
-                    <strong>Gravimi i tekstit:</strong> "${item.configuration?.engraving?.text}"<br>
-                    <strong>Fonti:</strong> ${item.configuration?.engraving?.fontFamily}
-                  </td>
+                ${item.configuration?.engraving?.text !== "" 
+                  ? `
+                    <td colspan="3" style="padding: 10px;">
+                      <strong>Gravimi i tekstit:</strong> "${item.configuration?.engraving?.text}"<br>
+                      <strong>Fonti:</strong> ${item.configuration?.engraving?.fontFamily}
+                    </td>
+                  ` 
+                  : `
+                    <td colspan="3" style="padding: 10px;">
+                      <strong>Nuk ka gravim te tekstit</strong>
+                    </td>
+                  `}
                 </tr>
               ` : ''}
             </table>
@@ -505,8 +513,8 @@ export class PaymentService {
                     <div style="color: #374151; font-weight: 600; margin-bottom: 5px;">Metali</div>
                     <div style="background-color: #f9fafb; padding: 10px; border-radius: 6px;">
                       <div style="color: #6b7280; font-size: 14px;">Lloji: <span style="color: #111827">${colorTypes[item.configuration?.preciousMetal?.colorType]}</span></div>
-                      ${item.configuration?.preciousMetal?.colors.map(color => `
-                        <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">${color.metalColor}: <span style="color: #111827">${color.fineness}</span> (${color.polishType})</div>
+                      ${item.configuration?.preciousMetal?.colors.map((color, idx) => `
+                        <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Ngjyra ${idx + 1}: <span style="color: #111827">${color.metalColor}</span> (${color.fineness}) (${color.polishType})</div>
                       `).join('')}
                       ${item.configuration?.preciousMetal?.colors.length > 1 ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Forma: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.category} ${item.configuration?.preciousMetal?.shape.variant}</span></div>` : ''}
                       ${item.configuration?.preciousMetal?.colors.length > 1 && item.configuration?.preciousMetal?.shape.heightPercentage !== undefined ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Lartesia: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.heightPercentage}%</span></div>` : ''}
@@ -607,10 +615,11 @@ export class PaymentService {
                   ${item.configuration?.engraving ? `
                     <div>
                       <div style="color: #374151; font-weight: 600; margin-bottom: 5px;">Gravimi i tekstit</div>
-                      <div style="background-color: #f9fafb; padding: 10px; border-radius: 6px;">
+                      ${item.configuration?.engraving?.text !== ""
+                       ? `<div style="background-color: #f9fafb; padding: 10px; border-radius: 6px;">
                         <div style="color: #6b7280; font-size: 14px;">Teksti: <span style="color: #111827">"${item.configuration?.engraving?.text}"</span></div>
                         <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Fonti: <span style="color: #111827">${item.configuration?.engraving?.fontFamily}</span></div>
-                      </div>
+                      </div>` : 'Nuk ka gravim te tekstit'}
                     </div>
                   ` : ''}
                 </td>
