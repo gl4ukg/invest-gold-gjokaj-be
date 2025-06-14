@@ -265,8 +265,17 @@ export class PaymentService {
       );
     }
   }
+
   
   async handleCallback(payload: any) {
+
+
+    const colorTypes = {
+      'single': "Nje ngjyresh",
+      'two': "Dy ngjyresh",
+      'three': "Tresor ngjyra",
+    }
+    
     const { merchantTransactionId, status, uuid } = payload;
   
     const isRefund = merchantTransactionId.endsWith('-refund');
@@ -340,7 +349,7 @@ export class PaymentService {
                 </td>
                 <td style="width: 33%; padding: 10px; vertical-align: top;">
                   <strong>Metali:</strong><br>
-                  Lloji: ${item.configuration?.preciousMetal?.colorType}<br>
+                  Lloji: ${colorTypes[item.configuration?.preciousMetal?.colorType]}<br>
                   ${item.configuration?.preciousMetal?.colors.map(c => `${c.metalColor} (${c.fineness}) (${c.polishType})`).join('<br>')}
                   ${ item.configuration?.preciousMetal?.colors.length > 1 ? `<br>Forma: ${item.configuration?.preciousMetal?.shape.category} ${item.configuration?.preciousMetal?.shape.variant}` : ''}
                   ${item.configuration?.preciousMetal?.colors.length > 1 ? `${item.configuration?.preciousMetal?.shape.heightPercentage !== undefined ? `<br>Lartesia: ${item.configuration?.preciousMetal?.shape.heightPercentage}%` : ''}` : ''}
@@ -359,7 +368,7 @@ export class PaymentService {
                           <p style="margin: 0;">Guri ${idx + 1}</p>
                           <p style="margin: 0;">Madhësia: ${stone.size}</p>
                           <p style="margin: 0;">Cilësia: ${stone.quality}</p>
-                          <p style="margin: 0;">Pozicioni: (${stone.x.toFixed(2)}mm, ${stone.y.toFixed(2)}mm)</p>
+                          <p style="margin: 0;">Pozicioni: (X:${stone.x.toFixed(2)}mm, Y:${stone.y.toFixed(2)}mm)</p>
                         `).join('');
                       } else {
                         return `
@@ -494,12 +503,12 @@ export class PaymentService {
                   <div style="margin-bottom: 15px;">
                     <div style="color: #374151; font-weight: 600; margin-bottom: 5px;">Metali</div>
                     <div style="background-color: #f9fafb; padding: 10px; border-radius: 6px;">
-                      <div style="color: #6b7280; font-size: 14px;">Lloji: <span style="color: #111827">${item.configuration?.preciousMetal?.colorType}</span></div>
+                      <div style="color: #6b7280; font-size: 14px;">Lloji: <span style="color: #111827">${colorTypes[item.configuration?.preciousMetal?.colorType]}</span></div>
                       ${item.configuration?.preciousMetal?.colors.map(color => `
                         <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">${color.metalColor}: <span style="color: #111827">${color.fineness}</span> (${color.polishType})</div>
                       `).join('')}
                       ${item.configuration?.preciousMetal?.colors.length > 1 ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Forma: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.category} ${item.configuration?.preciousMetal?.shape.variant}</span></div>` : ''}
-                      ${item.configuration?.preciousMetal?.colors.length > 1 && item.configuration?.preciousMetal?.shape.heightPercentage !== undefined ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Lartesia: (${item.configuration?.preciousMetal?.shape.heightPercentage}%)</div>` : ''}
+                      ${item.configuration?.preciousMetal?.colors.length > 1 && item.configuration?.preciousMetal?.shape.heightPercentage !== undefined ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Lartesia: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.heightPercentage}%</span></div>` : ''}
                       ${item.configuration?.preciousMetal?.colors.length > 1 && item.configuration?.preciousMetal?.shape.waveCount !== undefined ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Numri i valave: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.waveCount}</span></div>` : ''}
                     </div>
                   </div>
@@ -519,7 +528,7 @@ export class PaymentService {
                                 <div style="color: #6b7280; font-size: 14px;">Guri <span style="color: #111827">${idx + 1}</span>:</div>
                                 <div style="color: #111827; font-size: 14px; margin-top: 2px;">Madhesia: <span style="color: #111827">${stone.size}</span></div>
                                 <div style="color: #6b7280; font-size: 14px; margin-top: 2px;">Qualiteti: <span style="color: #111827">${stone.quality}</span></div>
-                                <div style="color: #6b7280; font-size: 14px; margin-top: 2px;">Pozicioni: <span style="color: #111827">(${stone.x.toFixed(2)}mm, ${stone.y.toFixed(2)}mm)</span></div>
+                                <div style="color: #6b7280; font-size: 14px; margin-top: 2px;">Pozicioni: <span style="color: #111827">(X:${stone.x.toFixed(2)}mm, Y:${stone.y.toFixed(2)}mm)</span></div>
                               </div>
                             `).join('')}
                           `;
