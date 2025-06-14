@@ -137,11 +137,11 @@ export class OrdersService {
                 </td>
                 <td style="width: 33%; padding: 10px; vertical-align: top;">
                   <strong>Metali:</strong><br>
-                  ${item.configuration?.preciousMetal?.colorType}<br>
+                  Lloji: ${item.configuration?.preciousMetal?.colorType}<br>
                   ${item.configuration?.preciousMetal?.colors.map(c => `${c.metalColor} (${c.fineness}) (${c.polishType})`).join('<br>')}
-                  ${ item.configuration?.preciousMetal?.colors.length > 1 ? `<br>Forma: ${item.configuration?.preciousMetal?.shape.category}` : ''}
-                  ${item.configuration?.preciousMetal?.colors.length > 2 ? `<br>Lartesia: ${item.configuration?.preciousMetal?.shape.heightPercentage}%` : ''}
-                  ${item.configuration?.preciousMetal?.colors.length > 2 ? `<br>Numri i valave: ${item.configuration?.preciousMetal?.shape.waveCount}` : ''}
+                  ${ item.configuration?.preciousMetal?.colors.length > 1 ? `<br>Forma: ${item.configuration?.preciousMetal?.shape.category} ${item.configuration?.preciousMetal?.shape.variant}` : ''}
+                  ${item.configuration?.preciousMetal?.colors.length > 1 ? `${item.configuration?.preciousMetal?.shape.heightPercentage !== undefined ? `<br>Lartesia: ${item.configuration?.preciousMetal?.shape.heightPercentage}%` : ''}` : ''}
+                  ${item.configuration?.preciousMetal?.colors.length > 1 ? `${item.configuration?.preciousMetal?.shape.waveCount !== undefined ? `<br>Numri i valave: ${item.configuration?.preciousMetal?.shape.waveCount}` : ''}` : ''}
                 </td>
                 <td style="width: 33%; padding: 10px; vertical-align: top;">
                   <strong>Guret:</strong><br>
@@ -156,7 +156,7 @@ export class OrdersService {
                           <p>Guri ${idx + 1}</p>
                           <p>Madhësia: ${stone.size}</p>
                           <p>Cilësia: ${stone.quality}</p>
-                          <p>Pozicioni: (${stone.x.toFixed(2)}, ${stone.y.toFixed(2)})</p>
+                          <p>Pozicioni: (${stone.x.toFixed(2)}mm, ${stone.y.toFixed(2)}mm)</p>
                         `).join('');
                       } else {
                         return `
@@ -165,7 +165,7 @@ export class OrdersService {
                           <p>Cilësia: ${s?.stoneQuality}</p>
                           <p>Numri i gureve: ${s?.numberOfStones}</p>
                           <p>Pozicioni: ${s?.position}</p>
-                          ${s?.position === "Free" ? `<br>(${(Math.abs(s?.offset || 0) * 0.1).toFixed(1)}mm ${Number(s?.offset) > 0 ? 'Right' : 'Left'})` : ''}
+                          ${s?.position === "Free" ? `<br>(${Math.abs(s?.offset || 0)}mm ${Number(s?.offset) > 0 ? 'Right' : 'Left'})` : ''}
                         `;
                       }
                     })()
@@ -283,8 +283,8 @@ export class OrdersService {
                       ${item.configuration?.preciousMetal?.colors.map(color => `
                         <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">${color.metalColor}: <span style="color: #111827">${color.fineness}</span> (${color.polishType})</div>
                       `).join('')}
-                      ${item.configuration?.preciousMetal?.colors.length > 1 ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Forma: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.category} Lartesia: (${item.configuration?.preciousMetal?.shape.heightPercentage}%)</span></div>` : ''}
-                      ${item.configuration?.preciousMetal?.colors.length > 2 ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Numri i valave: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.waveCount}</span></div>` : ''}
+                      ${item.configuration?.preciousMetal?.colors.length > 1 ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Forma: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.category} ${item.configuration?.preciousMetal?.shape.variant} ${item.configuration?.preciousMetal?.shape.heightPercentage !== undefined ? `Lartesia: (${item.configuration?.preciousMetal?.shape.heightPercentage}%)` : ''}</span></div>` : ''}
+                      ${item.configuration?.preciousMetal?.colors.length > 1 ? `${item.configuration?.preciousMetal?.shape.waveCount !== undefined ? `<div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Numri i valave: <span style="color: #111827">${item.configuration?.preciousMetal?.shape.waveCount}</span></div>` : ''}` : ''}
                     </div>
                   </div>
 
@@ -303,7 +303,7 @@ export class OrdersService {
                                 <div style="color: #6b7280; font-size: 14px;">Guri ${idx + 1}:</div>
                                 <div style="color: #111827; font-size: 14px; margin-top: 2px;">Madhesia: ${stone.size}</div>
                                 <div style="color: #6b7280; font-size: 14px; margin-top: 2px;">Qualiteti: ${stone.quality}</div>
-                                <div style="color: #6b7280; font-size: 14px; margin-top: 2px;">Pozicioni: (${stone.x.toFixed(2)}, ${stone.y.toFixed(2)})</div>
+                                <div style="color: #6b7280; font-size: 14px; margin-top: 2px;">Pozicioni: (${stone.x.toFixed(2)}mm, ${stone.y.toFixed(2)}mm)</div>
                               </div>
                             `).join('')}
                           `;
@@ -330,10 +330,10 @@ export class OrdersService {
                         ${item.configuration?.groovesAndEdges?.groove?.map(groove => `
                           <div style="margin-bottom: 10px;">
                             <div style="color: #6b7280; font-size: 14px;">Lloji: <span style="color: #111827">${groove?.grooveType}</span></div>
-                            <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Përmasat: <span style="color: #111827">${groove?.depth}×${groove?.width}mm</span></div>
-                            <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Surface: <span style="color: #111827">${groove?.surface}</span></div>
-                            <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Direction: <span style="color: #111827">${groove?.direction}</span></div>
-                            <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Position: <span style="color: #111827">${groove?.position}mm</span></div>
+                            <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Përmasat: <span style="color: #111827">Thellesia: ${groove?.depth}mm, Gjeresia: ${groove?.width}mm</span></div>
+                            <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Sipërfaqja: <span style="color: #111827">${groove?.surface}</span></div>
+                            <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Drejtimi: <span style="color: #111827">${groove?.direction}</span></div>
+                            <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Pozicioni: <span style="color: #111827">${groove?.position}mm</span></div>
                             ${groove?.direction === "wave" ? `
                               <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Numri i valëve: <span style="color: #111827">${groove?.numberOfWaves}</span></div>
                               <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Lartësia e valës: <span style="color: #111827">${groove?.waveHeight}%</span></div>
