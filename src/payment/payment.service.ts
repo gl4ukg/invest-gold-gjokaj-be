@@ -268,7 +268,6 @@ export class PaymentService {
   
   async handleCallback(payload: any) {
     const { merchantTransactionId, status, uuid } = payload;
-    console.log(payload,"payload")
   
     const isRefund = merchantTransactionId.endsWith('-refund');
     const baseMerchantTransactionId = isRefund
@@ -288,8 +287,6 @@ export class PaymentService {
       where: { merchantTransactionId: baseMerchantTransactionId },
     });
 
-    console.log(transaction,"transaction")
-  
     if (!transaction) {
       throw new NotFoundException('Transaction not found for callback');
     }
