@@ -122,7 +122,22 @@ export class PaymentService {
     const signature = crypto
       .createHmac('sha512', this.sharedSecret)
       .update(message)
-      .digest('base64'); // NOT hex!  
+      .digest('base64');
+
+    // Log request components for debugging
+    console.log('Bankart Request Components:', {
+      timestamp: new Date().toISOString(),
+      requestUri,
+      bodyHash,
+      messageComponents: {
+        method,
+        bodyHash,
+        contentType,
+        date,
+        requestUri
+      },
+      signature: signature.substring(0, 10) + '...' // Log partial signature for security
+    });
 
     const headers = {
       'Content-Type': contentType,
@@ -157,7 +172,24 @@ export class PaymentService {
         success: response.data.success,
       };
     } catch (error) {
-      console.error('Bankart error:', error.response?.data || error.message || error);
+      // Log detailed error information
+      console.error('Bankart Payment Error:', {
+        timestamp: new Date().toISOString(),
+        errorStatus: error.response?.status,
+        errorData: error.response?.data,
+        errorMessage: error.message,
+        requestId: error.response?.headers?.['x-request-id'],
+        orderId: order.id
+      });
+
+      // If it's an authentication error, log additional details
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.error('Bankart Auth Error Details:', {
+          timestamp: new Date().toISOString(),
+          requestHeaders: error.config?.headers,
+          responseHeaders: error.response?.headers
+        });
+      }
 
       throw new BadRequestException(
         error.response?.data?.message || 'Dështoi në krijimin e pagesës'
