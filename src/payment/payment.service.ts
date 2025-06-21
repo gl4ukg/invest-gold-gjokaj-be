@@ -154,9 +154,26 @@ export class PaymentService {
         }
       );
 
+      console.log(response,"bankart response")
+
+      // Log the response for debugging
+      console.log('Bankart Response:', {
+        timestamp: new Date().toISOString(),
+        success: response.data?.success,
+        purchaseId: response.data?.purchaseId,
+        uuid: response.data?.uuid,
+        redirectUrl: response.data?.redirectUrl
+      });
+
+      // Validate response data
+      if (!response.data?.purchaseId) {
+        console.error('Invalid Bankart response - missing purchaseId:', response.data);
+        throw new BadRequestException('Invalid response from payment provider');
+      }
+
       const transaction = this.paymentTransactionRepository.create({
         bankartTransactionId: response.data.purchaseId,
-        uuid: response.data.uuid,
+        uuid: response.data.uuid || null, // Make uuid optional
         merchantTransactionId: order.id,
         amount: createPaymentDto.amount,
         currency: createPaymentDto.currency,
