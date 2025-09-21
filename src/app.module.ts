@@ -11,6 +11,7 @@ import { OrdersModule } from './orders/orders.module';
 import { EmailModule } from './email/email.module';
 import { PriceOfGramModule } from './price-of-gram/price-of-gram.module';
 import { PaymentModule } from './payment/payment.module';
+import { BlogModule } from './blog/blog.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,6 +31,7 @@ import { PaymentModule } from './payment/payment.module';
     EmailModule,
     PriceOfGramModule,
     PaymentModule,
+    BlogModule,
   ],
 })
 export class AppModule {}
