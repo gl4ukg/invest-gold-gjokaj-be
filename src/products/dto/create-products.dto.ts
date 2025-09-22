@@ -1,5 +1,19 @@
 import { Products } from "../products.entity";
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Matches, IsObject } from 'class-validator';
+
+export class MultiLanguageDescription {
+  @IsString()
+  @IsNotEmpty()
+  en: string;
+
+  @IsString()
+  @IsNotEmpty()
+  de: string;
+
+  @IsString()
+  @IsNotEmpty()
+  sq: string;
+}
 
 export class ProductData {
   @IsNotEmpty()
@@ -7,8 +21,8 @@ export class ProductData {
   name: string;
 
   @IsNotEmpty()
-  @IsString()
-  description: string;
+  @IsObject()
+  description: MultiLanguageDescription;
 
   @IsOptional()
   @IsNumber()

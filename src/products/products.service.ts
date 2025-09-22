@@ -42,6 +42,15 @@ export class ProductsService {
       throw new BadRequestException('Images must be provided as an array');
     }
 
+    // Convert old string description to new format if needed
+    if (typeof productData.description === 'string') {
+      productData.description = {
+        en: productData.description,
+        de: productData.description,
+        sq: productData.description
+      };
+    }
+
     const product = this.productsRepository.create({
       ...productData,
       category,
@@ -75,7 +84,13 @@ export class ProductsService {
     // Apply search query if provided
     if (query) {
       queryBuilder.andWhere(
-        '(LOWER(product.name) LIKE LOWER(:search))',
+        '(LOWER(product.name) LIKE LOWER(:search) OR ' +
+        'CASE ' +
+        'WHEN jsonb_typeof(product.description) = "string" THEN LOWER(product.description::text) LIKE LOWER(:search) ' +
+        'ELSE LOWER(product.description->>"en") LIKE LOWER(:search) OR ' +
+        'LOWER(product.description->>"de") LIKE LOWER(:search) OR ' +
+        'LOWER(product.description->>"sq") LIKE LOWER(:search) ' +
+        'END)',
         { search: `%${query}%` }
       );
     }
@@ -202,6 +217,15 @@ export class ProductsService {
       }
     } else if (productData.images) {
       throw new BadRequestException('Images must be provided as an array');
+    }
+
+    // Convert old string description to new format if needed
+    if (typeof productData.description === 'string') {
+      productData.description = {
+        en: productData.description,
+        de: productData.description,
+        sq: productData.description
+      };
     }
 
     const updateResult = await this.productsRepository.update(id, productData);

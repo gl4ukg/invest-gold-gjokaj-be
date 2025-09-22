@@ -15,14 +15,14 @@ export class Blog {
   title: {
     en: string;
     de: string;
-    al: string;
+    sq: string;
   };
 
   @Column({ type: 'jsonb' })
   content: {
     en: string;
     de: string;
-    al: string;
+    sq: string;
   };
 
   @Column({ type: 'varchar', length: 255 })
@@ -35,7 +35,7 @@ export class Blog {
   metaDescription: {
     en: string;
     de: string;
-    al: string;
+    sq: string;
   };
 
   @CreateDateColumn()

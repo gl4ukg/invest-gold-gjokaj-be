@@ -6,7 +6,7 @@ export class CreateBlogDto {
   title: {
     en: string;
     de: string;
-    al: string;
+    sq: string;
   };
 
   @IsObject()
@@ -14,7 +14,7 @@ export class CreateBlogDto {
   content: {
     en: string;
     de: string;
-    al: string;
+    sq: string;
   };
 
   @IsString()
@@ -31,6 +31,6 @@ export class CreateBlogDto {
   metaDescription?: {
     en: string;
     de: string;
-    al: string;
+    sq: string;
   };
 }

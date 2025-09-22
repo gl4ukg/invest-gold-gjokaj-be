@@ -10,8 +10,12 @@ export class Products {
   @Column()
   name: string;
 
-  @Column()
-  description: string;
+  @Column({ type: 'jsonb', nullable: true })
+  description: {
+    en: string;
+    de: string;
+    sq: string;
+  } | string;
 
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   price: number;
