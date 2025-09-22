@@ -7,6 +7,9 @@ export class Products {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ type: 'int', unique: true, generated: 'increment', nullable: true })
+  numericId: number;
+
   @Column()
   name: string;
 

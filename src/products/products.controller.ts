@@ -38,7 +38,9 @@ export class ProductsController {
 
   @Get(':id')
   async getProduct(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+    // If id is numeric, parse it as number
+    const productId = /^\d+$/.test(id) ? parseInt(id, 10) : id;
+    return this.productsService.findOne(productId);
   }
 
   @Post(':id')
@@ -47,12 +49,16 @@ export class ProductsController {
     @Param('id') id: string,
     @Body() productData: any
   ) {
-    return this.productsService.update(id, productData);
+    // For updates, we'll still use the UUID to ensure data integrity
+    const product = await this.productsService.findOne(id);
+    return this.productsService.update(product.id, productData);
   }
 
   @Post(':id/delete')
   @UseGuards(JwtAuthGuard)
   async deleteProduct(@Param('id') id: string) {
-    return this.productsService.remove(id);
+    // For deletion, we'll still use the UUID to ensure data integrity
+    const product = await this.productsService.findOne(id);
+    return this.productsService.remove(product.id);
   }
 }
