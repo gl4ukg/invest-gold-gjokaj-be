@@ -87,12 +87,18 @@ export class ProductsService {
     if (query) {
       queryBuilder.andWhere(
         '(LOWER(product.name) LIKE LOWER(:search) OR ' +
+          'LOWER(COALESCE(' +
           'CASE ' +
-          'WHEN jsonb_typeof(product.description) = "string" THEN LOWER(product.description::text) LIKE LOWER(:search) ' +
-          'ELSE LOWER(product.description->>"en") LIKE LOWER(:search) OR ' +
-          'LOWER(product.description->>"de") LIKE LOWER(:search) OR ' +
-          'LOWER(product.description->>"sq") LIKE LOWER(:search) ' +
-          'END)',
+          "WHEN jsonb_typeof(product.description) = 'string' " +
+          "THEN product.description#>>'{}' " +
+          "ELSE CONCAT_WS(' ', " +
+          "  product.description->>'en', " +
+          "  product.description->>'de', " +
+          "  product.description->>'sq' " +
+          ') ' +
+          'END, ' +
+          "''" +
+          ')) LIKE LOWER(:search))',
         { search: `%${query}%` },
       );
     }
