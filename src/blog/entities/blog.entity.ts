@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('blogs')
 export class Blog {
@@ -21,6 +27,9 @@ export class Blog {
 
   @Column({ type: 'varchar', length: 255 })
   slug: string;
+
+  @Column({ nullable: true })
+  image: string;
 
   @Column({ type: 'jsonb', nullable: true })
   metaDescription: {

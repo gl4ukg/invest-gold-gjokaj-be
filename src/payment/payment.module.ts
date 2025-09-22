@@ -5,7 +5,7 @@ import { PaymentService } from './payment.service';
 import { PaymentTransaction } from './entities/payment-transaction.entity';
 import { Order } from '../orders/order.entity';
 import { AuthModule } from '../auth/auth.module';
-import { EmailModule } from 'src/email/email.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
